@@ -57,31 +57,35 @@ description: >-
 
 ---
 
-## 3. 全局不可逾越的工程铁律
+## 3. 全局不可逾越的五大工程铁律
 
 在执行本 Skill 的任何模式，以及编写目标项目的 `AGENTS.md` 时，必须强制贯彻以下准则：
 
 1. **进场先对齐铁律**：新会话开工前，必读 `AGENTS.md` → `docs/00-ai-hub/STATE.md` → `SESSIONS.md` → 最新 `handoffs/` → `docs/06-ops-and-pitfalls/pitfalls.md`，先向用户输出 **≤5 行的「进度对齐简报」**，再动手修改代码。
 2. **反糊弄铁律**：严禁未经用户明确允许用硬编码假数据（Mock / Stub / 空 `TODO`）冒充已完成；未在终端实际跑通验证命令前，严禁声称“已完成”。
 3. **防越界与洁癖铁律**：严守最小改动半径，禁止顺手重构无关文件、擅自新增/升级重型依赖、触碰其他 AI 在 `SESSIONS.md` 锁定的模块，或污染项目根目录（临时文件一律进 `.tmp/`）。
-4. **高危操作熔断铁律**：凡涉及删除核心文件/持久化数据、推翻既有 ADR 架构决策、`git reset --hard`、`git push --force` 或直接在 `main` 分支提交，必须立即停下请示人类确认。
-5. **双主干与双轨隔离规范**：
+4. **数据安全与脱敏推送铁律（双保险强制门禁）**：
+   - **代码与配置零硬编码**：严禁在源码、脚本、测试、配置文件中硬编码任何真实 API Key（`sk-...`、`AIza...`、`ghp_...` 等）、云厂商 AK/SK（`AKIA...`、`LTAI...`、`AKID...`）、私钥、带明文密码的数据库连接串或飞书/企微/钉钉/Slack Webhook Token。
+   - **文档与交接单强制脱敏**：编写 `README.md`、`deployment.md`、`pitfalls.md`、`handoffs/` 与 `reviews/` 时，严禁写入真实生产服务器公网 IP、SSH 凭据、未脱敏的 `Authorization` / `Cookie` 调试报文或真实用户隐私数据（PII，如真实手机号/邮箱/业务库导出样本），一律替换为 `<YOUR_API_KEY>`、`<REDACTED>` 等安全占位符。
+   - **自主提交推送与物理钩子门禁**：项目初始化时默认自动安装 `.git/hooks/pre-commit` 与 `pre-push` 敏感拦截钩子。**只要通过自动化秘钥与敏感数据扫描（无违规阻断），允许 AI 按工程流程自主执行 `git commit` 与 `git push`**；一旦钩子或 `secret-scan` 报警阻断，严禁使用 `--no-verify` 强行绕过！首次创建远端仓库默认必须为 `Private`，若远端为 `Public` 仓库则推送前必须额外核验无任何内部架构敏感路径。
+5. **高危操作熔断铁律**：凡涉及删除核心文件/持久化数据、推翻既有 ADR 架构决策、`git reset --hard`、`git push --force`、绕过安全钩子（`--no-verify`）或直接在 `main` 分支提交，必须立即停下请示人类确认。
+6. **双主干与双轨隔离规范**：
    - Git 采用 `main`（仅存已验收稳定版 + `vX.Y.Z` Tag）← `develop`（日常迭代集成主干）← `feat/*`、`fix/*`、`docs/*`、`refactor/*`、`spike/*`。
    - 多终端并行改不同分支时，强制使用 `git worktree`（挂载于 `.worktrees/<branch-slug>`）物理隔离；同分支处理轻量非重叠目录时，使用 `SESSIONS.md` 登记模块锁。
-6. **语言与 Commit 规范**：文档、代码关键注释、日常沟通、交接单一律使用**中文**；代码标识符与 Git 分支名使用**英文**；Commit Message 统一为 `<type>(<scope>): <中文描述>`（如 `feat(auth): 实现登录鉴权与令牌刷新`）。
+7. **语言与 Commit 规范**：文档、代码关键注释、日常沟通、交接单一律使用**中文**；代码标识符与 Git 分支名使用**英文**；Commit Message 统一为 `<type>(<scope>): <中文描述>`（如 `feat(auth): 实现登录鉴权与令牌刷新`）。
 
 ---
 
 ## 4. 确定性脚本执行引擎（优先调用，无环境自动降级）
 
-为实现「1 秒零误差建骨架、大幅节省 Token」，本 Skill 在 `scripts/` 下内置了零外部依赖的双平台脚本（逻辑完全一致）：
+为实现「1 秒零误差建骨架、自动部署安全钩子、大幅节省 Token」，本 Skill 在 `scripts/` 下内置了零外部依赖的双平台脚本（逻辑完全一致）：
 
 - **Windows（PowerShell 5.1 / 7+）**：
   ```powershell
-  powershell -NoProfile -ExecutionPolicy Bypass -File "<SKILL_DIR>/scripts/bootstrap.ps1" -Action <init|git-setup|worktree-add|worktree-remove|audit> -TargetDir "<TARGET_PROJECT_DIR>" [参数...]
+  powershell -NoProfile -ExecutionPolicy Bypass -File "<SKILL_DIR>/scripts/bootstrap.ps1" -Action <init|git-setup|worktree-add|worktree-remove|secret-scan|audit> -TargetDir "<TARGET_PROJECT_DIR>" [参数...]
   ```
 - **macOS / Linux / Git Bash（POSIX sh / bash）**：
   ```bash
-  sh "<SKILL_DIR>/scripts/bootstrap.sh" --action <init|git-setup|worktree-add|worktree-remove|audit> --target-dir "<TARGET_PROJECT_DIR>" [参数...]
+  sh "<SKILL_DIR>/scripts/bootstrap.sh" --action <init|git-setup|worktree-add|worktree-remove|secret-scan|audit> --target-dir "<TARGET_PROJECT_DIR>" [参数...]
   ```
 - **受限环境降级兜底**：若当前运行环境禁止执行外部脚本，请直接读取 `[templates/](./templates/)` 目录下的 `.tmpl` 模板文件，替换模板变量（`{{PROJECT_NAME}}`、`{{PROJECT_SUMMARY}}`、`{{TECH_STACK}}`、`{{DATE}}`）后通过文件写入工具落盘，并手动执行对应 `git` 命令。

@@ -1,17 +1,54 @@
 # === dev-setup AI Project OS Managed Rules (START) ===
-# 1. 环境变量与敏感秘钥防护（严禁提交真实秘钥）
+# 1. 环境变量、私钥证书与云平台敏感凭据防护（严禁提交任何真实秘钥）
 .env
 .env.*
 !.env.example
+!.env.sample
+!.env.template
 *.pem
 *.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.pkcs12
+id_rsa
+id_rsa.*
+!id_rsa.pub
+id_ed25519
+id_ed25519.*
+!id_ed25519.pub
+*credentials*.json
+*service-account*.json
+*client_secret*.json
+*secret*.json
+*secret*.yaml
+*secret*.yml
+.npmrc
+.pypirc
+.netrc
+kubeconfig
+*.kubeconfig
 
-# 2. AI 临时草稿隔离区与多终端并行 git worktree 工作区
+# 2. 本地数据库快照、备份与网络抓包文件防护（防 PII 隐私与登录态 Cookie 泄露）
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.dump
+*.bak
+*.sql.gz
+*.har
+*.pcap
+*.pcapng
+
+# 3. AI 临时草稿隔离区与多终端并行 git worktree 工作区
 .tmp/*
 !.tmp/.gitkeep
 .worktrees/
 
-# 3. 操作系统与编辑器本地状态
+# 4. 操作系统与编辑器本地状态
 .DS_Store
 Thumbs.db
 Desktop.ini
@@ -20,7 +57,7 @@ Desktop.ini
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# 4. 常见语言构建产物与依赖缓存底座
+# 5. 常见语言构建产物与依赖缓存底座
 node_modules/
 dist/
 build/

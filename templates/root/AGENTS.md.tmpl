@@ -36,7 +36,7 @@
 
 ---
 
-## 3. 四大最高优先级工程红线（一票否决）
+## 3. 五大最高优先级工程红线（一票否决）
 
 1. **【反糊弄铁律】**：
    - **严禁未经用户明确允许**使用硬编码假数据（Mock / Stub / 空壳 `TODO`）冒充功能已完成。若因外部接口暂缺必须临时 Mock，必须在回复、`STATE.md` 及代码注释显著标注 `[MOCK-BLOCKER]`。
@@ -46,7 +46,11 @@
    - **根目录洁癖**：严禁在根目录或业务源码目录遗留一次性测试脚本、调试日志或草稿文档；所有临时验证文件一律放入 `.tmp/`，用完即清。
    - **源码目录登记**：首次用框架脚手架生成业务源码目录（如 `src/`、`apps/`）后，必须立即将真实源码目录树回填至 `README.md` 与 `docs/02-architecture/system-design.md`。
 3. **【进场先对齐铁律】**：未读 `STATE.md` 与 `pitfalls.md` 并输出对齐简报前，不得擅自修改业务代码。
-4. **【高危操作熔断铁律】**：凡涉及删除核心文档/数据库迁移/持久化数据、推翻 `docs/02-architecture/adr/` 既有技术决策、`git reset --hard`、`git push --force`、直接在 `main` 分支提交或破坏性修改 `docs/03-contracts/` 公开契约，**必须立即停下请示人类确认**。
+4. **【数据安全与脱敏推送铁律】**：
+   - **零硬编码秘钥**：严禁在任何源码、测试、脚本或配置中写入真实 API Key（`sk-...`、`AIza...`、`ghp_...` 等）、云厂商凭据（`AKIA...`、`LTAI...`、`AKID...`）、私钥证书、带明文密码的连接串或群机器人 Webhook Token；一切敏感配置一律通过环境变量注入并在 `.env.example` 仅登记空键名。
+   - **文档与交接单脱敏**：在编写 `README.md`、`deployment.md`、`pitfalls.md`、`handoffs/` 与 `reviews/` 时，严禁贴入真实服务器公网 IP、SSH 口令、未脱敏的 `Authorization`/`Cookie` 请求报文或真实客户隐私数据（PII）；本地抓包（`*.har`）、数据库文件（`*.sqlite`/`*.db`/`*.dump`）严禁入库。
+   - **自主提交推送与钩子纪律**：本仓已部署 `.git/hooks/pre-commit` 与 `pre-push` 秘钥与敏感文件物理拦截钩子。**在确保通过自动化敏感扫描的前提下，AI 可按开发流程自主执行 `git commit` 与 `git push`**；若触发安全钩子阻断，必须立即彻底移除并脱敏相关内容，**绝对禁止使用 `--no-verify` 绕过安全钩子**！
+5. **【高危操作熔断铁律】**：凡涉及删除核心文档/数据库迁移/持久化数据、推翻 `docs/02-architecture/adr/` 既有技术决策、`git reset --hard`、`git push --force`、`git commit/push --no-verify`、直接在 `main` 分支提交或破坏性修改 `docs/03-contracts/` 公开契约，**必须立即停下请示人类确认**。
 
 ---
 

@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet("init", "git-setup", "worktree-add", "worktree-remove", "audit")]
+    [ValidateSet("init", "git-setup", "worktree-add", "worktree-remove", "secret-scan", "audit")]
     [string]$Action = "init",
 
     [Parameter(Mandatory = $false)]
@@ -208,6 +208,48 @@ function Invoke-InitAction {
     Write-Output "=== init scaffold complete ($modeLabel) ==="
 }
 
+function Install-GitSecretHooks {
+    param([string]$RepoRoot)
+    $hooksDir = Join-Path $RepoRoot ".git/hooks"
+    if (-not (Test-Path -LiteralPath $hooksDir)) {
+        New-Item -ItemType Directory -Path $hooksDir -Force | Out-Null
+    }
+
+    $guardSrc = Join-Path $TemplatesRoot "hooks/secret-guard.ps1"
+    $guardDst = Join-Path $hooksDir "secret-guard.ps1"
+    $guardContent = Read-Utf8File -Path $guardSrc
+    Write-Utf8File -Path $guardDst -Content $guardContent
+
+    foreach ($hookName in @("pre-commit", "pre-push")) {
+        $hookEntry = Join-Path $hooksDir $hookName
+        $hookCmd = Join-Path $hooksDir "$hookName.cmd"
+        $canWrite = $true
+        if ((Test-Path -LiteralPath $hookEntry) -and -not $Force) {
+            $existingHook = Read-Utf8File -Path $hookEntry
+            if ($existingHook -notmatch "dev-setup-secret-guard") {
+                Write-Output "[WARN] Custom Git hook '$hookName' already exists; preserved (pass -Force to replace)."
+                $canWrite = $false
+            }
+        }
+        if ($canWrite) {
+            $entryBody = "#!C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoProfile`n# dev-setup-secret-guard`n"
+            $cmdBody = "@echo off`r`nREM dev-setup-secret-guard`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File ""%~dp0secret-guard.ps1"" -HookMode $hookName`r`nexit /b %ERRORLEVEL%`r`n"
+            Write-Utf8File -Path $hookEntry -Content $entryBody
+            Write-Utf8File -Path $hookCmd -Content $cmdBody
+            Write-Output "[OK] Installed Git security hook: .git/hooks/$hookName"
+        }
+    }
+}
+
+function Invoke-SecretScanAction {
+    $target = Resolve-NormalizedDir -DirPath $TargetDir
+    $guardScript = Join-Path $TemplatesRoot "hooks/secret-guard.ps1"
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $guardScript -HookMode full -RepoDir $target
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+}
+
 function Invoke-GitSetupAction {
     $target = Resolve-NormalizedDir -DirPath $TargetDir
     Push-Location $target
@@ -224,6 +266,8 @@ function Invoke-GitSetupAction {
             }
             Write-Output "[OK] Initialized new Git repository on 'main'."
         }
+
+        Install-GitSecretHooks -RepoRoot $target
 
         # Ensure git author exists locally if global git config is absent
         $userRes = Invoke-Git config user.name
@@ -481,6 +525,28 @@ function Invoke-AuditAction {
                 }
             }
 
+            foreach ($hk in @("pre-commit", "pre-push")) {
+                $hkPath = Join-Path $gitDir "hooks/$hk"
+                if (Test-Path -LiteralPath $hkPath) {
+                    $passCount++
+                } else {
+                    Write-Output "[WARN] Git security hook '.git/hooks/$hk' is missing (run git-setup to install)."
+                    $warnCount++
+                }
+            }
+
+            $guardScript = Join-Path $TemplatesRoot "hooks/secret-guard.ps1"
+            $oldEap = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+            $scanOut = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $guardScript -HookMode full -RepoDir $target 2>&1
+            $scanExit = $LASTEXITCODE
+            $ErrorActionPreference = $oldEap
+            if ($scanExit -eq 0) {
+                $passCount++
+            } else {
+                foreach ($l in $scanOut) { Write-Output "$l" }
+                $failCount++
+            }
+
             $cur = (Invoke-Git branch --show-current).Text
             Write-Output "[INFO] Current Git branch: $cur"
             $wtList = (Invoke-Git worktree list).Output
@@ -507,5 +573,6 @@ switch ($Action) {
     "git-setup"       { Invoke-GitSetupAction }
     "worktree-add"    { Invoke-WorktreeAddAction }
     "worktree-remove" { Invoke-WorktreeRemoveAction }
+    "secret-scan"     { Invoke-SecretScanAction }
     "audit"           { Invoke-AuditAction }
 }

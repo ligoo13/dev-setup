@@ -28,16 +28,18 @@
 
 ## 二、`audit` 模式：6 维健康巡检执行流程
 
-### Step 1：运行确定性基础巡检脚本
-首先调用内置脚本完成文件系统、Git 分支、秘钥风险与工作区洁癖的自动化扫描：
+### Step 1：运行确定性基础巡检与全仓敏感扫描脚本
+首先调用内置脚本完成文件系统、Git 分支、安全钩子状态、秘钥硬编码风险与工作区洁癖的自动化扫描：
 
 - **Windows**：
   ```powershell
   powershell -NoProfile -ExecutionPolicy Bypass -File "<SKILL_DIR>/scripts/bootstrap.ps1" -Action audit -TargetDir "<TARGET_DIR>"
+  powershell -NoProfile -ExecutionPolicy Bypass -File "<SKILL_DIR>/scripts/bootstrap.ps1" -Action secret-scan -TargetDir "<TARGET_DIR>"
   ```
 - **macOS / Linux / Git Bash**：
   ```bash
   sh "<SKILL_DIR>/scripts/bootstrap.sh" --action audit --target-dir "<TARGET_DIR>"
+  sh "<SKILL_DIR>/scripts/bootstrap.sh" --action secret-scan --target-dir "<TARGET_DIR>"
   ```
 
 ### Step 2：AI 深度语义巡检（补齐脚本看不到的内容漂移）

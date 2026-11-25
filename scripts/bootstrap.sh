@@ -153,6 +153,37 @@ do_init() {
   echo "=== init scaffold complete ($MODE_LABEL) ==="
 }
 
+install_git_secret_hooks() {
+  repo_root="$1"
+  hooks_dir="$repo_root/.git/hooks"
+  mkdir -p "$hooks_dir"
+
+  cp "$TEMPLATES_ROOT/hooks/secret-guard.sh" "$hooks_dir/secret-guard.sh"
+  chmod +x "$hooks_dir/secret-guard.sh"
+
+  for hk in pre-commit pre-push; do
+    hk_path="$hooks_dir/$hk"
+    if [ -f "$hk_path" ] && [ "$FORCE" -eq 0 ]; then
+      if ! grep -q "dev-setup-secret-guard" "$hk_path"; then
+        echo "[WARN] Custom Git hook '$hk' already exists; preserved (pass --force to replace)."
+        continue
+      fi
+    fi
+    cat > "$hk_path" <<EOF
+#!/usr/bin/env sh
+# dev-setup-secret-guard
+exec "\$(dirname "\$0")/secret-guard.sh" "$hk"
+EOF
+    chmod +x "$hk_path"
+    echo "[OK] Installed Git security hook: .git/hooks/$hk"
+  done
+}
+
+do_secret_scan() {
+  TARGET_DIR=$(CDPATH= cd -- "$TARGET_DIR" && pwd)
+  sh "$TEMPLATES_ROOT/hooks/secret-guard.sh" full "$TARGET_DIR"
+}
+
 do_git_setup() {
   TARGET_DIR=$(CDPATH= cd -- "$TARGET_DIR" && pwd)
   cd "$TARGET_DIR"
@@ -162,6 +193,8 @@ do_git_setup() {
     git init -b main >/dev/null 2>&1 || { git init >/dev/null && git symbolic-ref HEAD refs/heads/main; }
     echo "[OK] Initialized new Git repository on 'main'."
   fi
+
+  install_git_secret_hooks "$TARGET_DIR"
 
   if [ -z "$(git config user.name || true)" ]; then
     git config user.name "Developer"
@@ -347,6 +380,19 @@ do_audit() {
         warn_c=$((warn_c + 1))
       fi
     done
+    for hk in pre-commit pre-push; do
+      if [ -f "$TARGET_DIR/.git/hooks/$hk" ]; then
+        pass_c=$((pass_c + 1))
+      else
+        echo "[WARN] Git security hook '.git/hooks/$hk' is missing (run git-setup to install)."
+        warn_c=$((warn_c + 1))
+      fi
+    done
+    if sh "$TEMPLATES_ROOT/hooks/secret-guard.sh" full "$TARGET_DIR"; then
+      pass_c=$((pass_c + 1))
+    else
+      fail_c=$((fail_c + 1))
+    fi
     echo "[INFO] Current Git branch: $(git branch --show-current || true)"
     echo "[INFO] Active Git worktrees:"
     git worktree list | sed 's/^/       /'
@@ -364,6 +410,7 @@ case "$ACTION" in
   git-setup)       do_git_setup ;;
   worktree-add)    do_worktree_add ;;
   worktree-remove) do_worktree_remove ;;
+  secret-scan)     do_secret_scan ;;
   audit)           do_audit ;;
   *) echo "Unsupported action: $ACTION" >&2; exit 2 ;;
 esac

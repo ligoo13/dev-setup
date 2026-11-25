@@ -94,4 +94,7 @@
    git merge --ff-only main
    ```
    按需在 `docs/04-iterations/` 与 `docs/05-acceptance/` 创建下一轮迭代与验收文档骨架，并在 `STATE.md` 更新下一阶段目标。
-6. **远程推送确认**：若项目配置了远程仓库（`git remote -v` 非空），询问用户是否需要将 `main`、`develop` 及新 Tag 推送至远端（未经允许不自动 push）。
+6. **自动化安全扫描与远端推送（Autonomous Push with Secret Guard）**：
+   - 本体系默认在 `.git/hooks/pre-commit` 与 `pre-push` 部署了物理级秘钥与敏感资产拦截钩子。
+   - 只要项目配置了远程仓库（`git remote -v` 非空），AI 在执行 `secret-scan`（或经由本地 Git 安全钩子自动核验通过）确认无任何 API Key、密码连接串、敏感文件及未脱敏文档信息后，**可按开发与发版闭环自主执行 `git commit` 与 `git push`**（含推送分支与语义化版本 Tag）。
+   - **安全铁律**：首次在 GitHub 创建仓库默认必须设为 `Private`；若检测到远端仓库为 `Public`，推送前必须额外复核文档与代码中无任何内部地址或业务敏感逻辑；任何情况下一旦触发安全钩子拦截报错，**严禁使用 `--no-verify` 强行跳过**！
