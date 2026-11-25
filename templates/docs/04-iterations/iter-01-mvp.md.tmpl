@@ -1,0 +1,28 @@
+# 迭代计划：`Iter-01 MVP`（目标版本 `v0.1.0`）
+
+- **迭代状态**：`Planning / In Progress`
+- **开始日期**：`{{DATE}}`
+- **关联验收单**：[accept-01-mvp.md](../05-acceptance/accept-01-mvp.md)
+
+---
+
+## 1. 本轮迭代核心目标
+
+围绕「{{PROJECT_SUMMARY}}」跑通最小闭环可用版本（MVP），建立源码工程骨架、标准自动化测试闭环与核心主流程。
+
+---
+
+## 2. 任务拆解看板（Task Breakdown）
+
+| 任务 ID | 模块 | 具体任务描述 | 依赖前置 | 负责分支 / AI | 状态 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `I01-T01` | 工程骨架 | 初始化 `{{TECH_STACK}}` 代码目录，配置 Lint/Test/Build 真实命令并回填 `AGENTS.md` 与 `README.md` | 无 | `develop` | `[ ]` |
+| `I01-T02` | 契约设计 | 完成 MVP 核心数据结构与接口契约定义（`03-contracts/`） | `I01-T01` | `develop` | `[ ]` |
+| `I01-T03` | 核心业务 | 实现 MVP 主链路功能与配套单元/集成测试 | `I01-T02` | `feat/*` | `[ ]` |
+| `I01-T04` | 联调验收 | 执行 `accept-01-mvp.md` 全量真实验证，归档发布 `v0.1.0` | `I01-T03` | `develop` → `main` | `[ ]` |
+
+---
+
+## 3. 迭代中期范围变更记录（Scope Changes）
+
+- `{{DATE}}`：创建 `Iter-01 MVP` 初始迭代计划。

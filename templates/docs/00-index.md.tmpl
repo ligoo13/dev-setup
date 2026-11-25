@@ -1,0 +1,27 @@
+# `{{PROJECT_NAME}}` 文档总索引与单一事实源（SSOT）导航
+
+> **最后更新**：`{{DATE}}`
+> 本目录集中管理项目全部业务规格、技术架构、迭代验收以及多 AI 运行时状态。
+
+---
+
+## 1. 核心目录速查导航
+
+| 编号目录 | 核心文档入口 | 职责定位 |
+| :--- | :--- | :--- |
+| **`00-ai-hub/`** | [STATE.md](./00-ai-hub/STATE.md) / [SESSIONS.md](./00-ai-hub/SESSIONS.md) | **AI 协同中枢**：全局断点进度、并发模块锁、`handoffs/` 交接单、`reviews/` 方案互审 |
+| **`01-prd/`** | [prd-overview.md](./01-prd/prd-overview.md) | **需求中心**：业务背景目标、核心功能范围、明确不做边界（Non-Goals） |
+| **`02-architecture/`** | [system-design.md](./02-architecture/system-design.md) / [adr/](./02-architecture/adr/) | **架构中心**：系统架构、模块与源码目录映射、ADR 关键技术选型记录 |
+| **`03-contracts/`** | [api-spec.md](./03-contracts/api-spec.md) / [data-dictionary.md](./03-contracts/data-dictionary.md) | **契约中心**：接口协议规范与核心数据模型字典（多端并行对齐基准） |
+| **`04-iterations/`** | [iter-01-mvp.md](./04-iterations/iter-01-mvp.md) | **迭代中心**：分阶段开发计划、任务拆解与范围变更记录 |
+| **`05-acceptance/`** | [accept-01-mvp.md](./05-acceptance/accept-01-mvp.md) | **验收中心**：里程碑完成定义（DoD）、实跑自测命令与验收签收单 |
+| **`06-ops-and-pitfalls/`** | [deployment.md](./06-ops-and-pitfalls/deployment.md) / [pitfalls.md](./06-ops-and-pitfalls/pitfalls.md) | **运维与错题本**：环境搭建发布指南 + 已验证死胡同/环境怪癖避坑记录 |
+
+---
+
+## 2. 防文档腐烂联动守则（摘自 `AGENTS.md`）
+
+1. **先契约后并行**：多终端并行开发前后端或跨模块功能前，必须先定稿更新 `03-contracts/`。
+2. **改架构必留痕**：目录结构变化更新 `02-architecture/system-design.md` 与根目录 `README.md`；关键技术取舍新增一篇 `02-architecture/adr/NNNN-*.md`。
+3. **踩坑必入库**：任何耗时超过 15 分钟排查出的隐蔽陷阱或被证伪的错误路径，立即记入 `06-ops-and-pitfalls/pitfalls.md`。
+4. **退场必刷新**：单次开发告一段落时刷新 `00-ai-hub/STATE.md`；跨窗口/跨 AI 接力时在 `00-ai-hub/handoffs/` 生成独立交接单。

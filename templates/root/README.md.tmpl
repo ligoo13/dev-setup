@@ -1,0 +1,66 @@
+# {{PROJECT_NAME}}
+
+> {{PROJECT_SUMMARY}}
+
+- **当前版本**：`v0.1.0-dev`
+- **核心技术栈**：`{{TECH_STACK}}`
+- **项目状态看板**：[docs/00-ai-hub/STATE.md](./docs/00-ai-hub/STATE.md)
+- **文档总导航**：[docs/00-index.md](./docs/00-index.md)
+
+---
+
+## 1. 项目简介
+
+<!-- 在此补充项目的业务背景、解决的核心问题与目标用户场景 -->
+本项目围绕「{{PROJECT_SUMMARY}}」构建，采用标准化文档驱动与多 AI 协同工程架构维护。
+
+---
+
+## 2. 快速开始
+
+### 环境要求
+- 技术栈环境：`{{TECH_STACK}}`
+- 环境变量配置：复制 `.env.example` 为 `.env` 并按需填入本地配置。
+
+### 常用命令
+```bash
+# 安装依赖（待业务代码框架初始化后回填真实命令）
+# TBD
+
+# 启动本地开发服务
+# TBD
+
+# 运行测试与代码检查
+# TBD
+```
+
+---
+
+## 3. 目录结构导览
+
+```text
+.
+├── AGENTS.md                  # AI 协作总宪法（进场必读唯一事实源）
+├── CLAUDE.md / GEMINI.md      # 跨 AI 工具规则桥接文件
+├── CHANGELOG.md               # 版本发布演进记录
+├── .env.example               # 环境变量配置模板
+├── .tmp/                      # 本地临时验证脚本与草稿隔离区（Git 忽略）
+└── docs/                      # 项目全生命周期文档与 AI 协同中心
+    ├── 00-index.md            # 文档总索引与更新联动表
+    ├── 00-ai-hub/             # 断点状态面板(STATE)、并发锁(SESSIONS)、交接单与评审报告
+    ├── 01-prd/                # 产品需求与范围边界
+    ├── 02-architecture/       # 系统架构设计与 ADR 技术决策记录
+    ├── 03-contracts/          # 接口契约与数据字典
+    ├── 04-iterations/         # 迭代计划与任务拆解
+    ├── 05-acceptance/         # 验收标准与实测报告
+    └── 06-ops-and-pitfalls/   # 运维部署指南与「踩坑错题本」
+```
+
+*(注：业务源码目录在框架初始化落地后同步补充至上方目录树及 `docs/02-architecture/system-design.md`。)*
+
+---
+
+## 4. 协作与开发指引
+
+- **人类开发者**：请先阅读 [产品需求总纲](./docs/01-prd/prd-overview.md) 与 [系统架构设计](./docs/02-architecture/system-design.md)。
+- **AI 编程助手**：进场必须优先遵循 [AGENTS.md](./AGENTS.md) 中的断点对齐、双主干分支与多端隔离协议。

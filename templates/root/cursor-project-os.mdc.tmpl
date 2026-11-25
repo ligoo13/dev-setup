@@ -1,0 +1,12 @@
+---
+description: 项目全局 AI 工程规范与多端协同总纲桥接（强制读取 AGENTS.md）
+globs:
+alwaysApply: true
+---
+
+# Project OS Rule Bridge (`{{PROJECT_NAME}}`)
+
+本项目的唯一工程规范与多 AI 协作事实源为根目录下的 `AGENTS.md`。
+
+1. **进场必做**：修改任何业务代码前，必须先读取 `AGENTS.md`、`docs/00-ai-hub/STATE.md`、`docs/00-ai-hub/SESSIONS.md` 与 `docs/06-ops-and-pitfalls/pitfalls.md`，并向用户输出 ≤5 行的「进度对齐简报」。
+2. **零分叉维护**：请勿在此规则文件中复制或分叉独立规范，所有项目级规则更新统一写入 `AGENTS.md`。
