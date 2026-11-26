@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 # Self-contained POSIX sh secret & sensitive file guard for dev-setup
+# Compatible with macOS (BSD awk/grep/sed/tr) and Linux (GNU/BusyBox)
 set -eu
 
 HOOK_MODE="${1:-pre-commit}"
@@ -48,8 +49,39 @@ check_file_path() {
   esac
 }
 
+should_skip_content_scan() {
+  f="$1"
+  [ -f "$f" ] || return 0
+
+  low_base=$(basename -- "$f" | LC_ALL=C tr 'A-Z' 'a-z')
+  case "$low_base" in
+    *.png|*.jpg|*.jpeg|*.webp|*.gif|*.bmp|*.ico|*.icns|*.avif|*.tiff|*.tif|*.psd|*.ai|*.eps|\
+    *.mp3|*.wav|*.ogg|*.flac|*.aac|*.m4a|*.mp4|*.mov|*.avi|*.mkv|*.webm|\
+    *.woff|*.woff2|*.ttf|*.otf|*.eot|\
+    *.pdf|*.zip|*.tar|*.tgz|*.gz|*.bz2|*.xz|*.7z|*.rar|\
+    *.wasm|*.pyc|*.pyo|*.pyd|*.so|*.dylib|*.dll|*.exe|*.bin|*.o|*.a|*.obj|*.class|*.jar|\
+    *.sqlite|*.sqlite3|*.db|*.dump|*.pcap|*.pcapng|*.p12|*.pfx|*.jks|*.keystore|*.pkcs12)
+      return 0
+      ;;
+  esac
+
+  # Skip oversized files (> 2MB)
+  fsize=$(wc -c < "$f" 2>/dev/null | LC_ALL=C tr -d ' ' || echo 0)
+  if [ "${fsize:-0}" -gt 2097152 ] || [ "${fsize:-0}" -eq 0 ]; then
+    return 0
+  fi
+
+  # Skip binary files containing NUL bytes (works on both macOS BSD grep and GNU grep)
+  if ! LC_ALL=C grep -Iq . "$f" 2>/dev/null; then
+    return 0
+  fi
+
+  return 1
+}
+
 scan_diff_stream() {
-  awk '
+  # LC_ALL=C prevents macOS BSD awk from throwing 'illegal byte sequence' on non-UTF-8 bytes
+  LC_ALL=C LANG=C awk '
     /^(\+\+\+ b\/)/ { cur = substr($0, 7); next }
     cur ~ /templates\/hooks\/secret-guard\.(ps1|sh)$/ { next }
     /^\+/ && !/^\+\+\+/ {
@@ -81,27 +113,29 @@ if [ "$HOOK_MODE" = "pre-commit" ]; then
   git diff --cached --name-only --diff-filter=ACMR | while IFS= read -r f; do
     check_file_path "$f"
   done
-  git diff --cached -U0 --no-color | scan_diff_stream
+  git diff --cached -U0 --no-color --no-ext-diff | scan_diff_stream
 elif [ "$HOOK_MODE" = "pre-push" ]; then
   git ls-files | while IFS= read -r f; do
     check_file_path "$f"
   done
   upstream=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}" 2>/dev/null || true)
   if [ -n "$upstream" ]; then
-    git diff "$upstream..HEAD" -U0 --no-color | scan_diff_stream
+    git diff "$upstream..HEAD" -U0 --no-color --no-ext-diff | scan_diff_stream
   else
     empty_tree="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
-    git diff "$empty_tree..HEAD" -U0 --no-color | scan_diff_stream
+    git diff "$empty_tree..HEAD" -U0 --no-color --no-ext-diff | scan_diff_stream
   fi
 elif [ "$HOOK_MODE" = "full" ]; then
-  { git ls-files; git ls-files --others --exclude-standard; } | sort -u | while IFS= read -r f; do
+  { git ls-files; git ls-files --others --exclude-standard; } | LC_ALL=C sort -u | while IFS= read -r f; do
     [ -n "$f" ] || continue
     check_file_path "$f"
     case "$f" in
       *templates/hooks/secret-guard.ps1|*templates/hooks/secret-guard.sh) continue ;;
     esac
-    [ -f "$f" ] || continue
-    awk -v fname="$f" '
+    if should_skip_content_scan "$f"; then
+      continue
+    fi
+    LC_ALL=C LANG=C awk -v fname="$f" '
       {
         line = $0
         low = tolower(line)
@@ -129,13 +163,13 @@ elif [ "$HOOK_MODE" = "full" ]; then
 fi
 
 if [ -s "$TMP_FINDINGS" ]; then
-  count=$(wc -l < "$TMP_FINDINGS" | tr -d ' ')
+  count=$(wc -l < "$TMP_FINDINGS" | LC_ALL=C tr -d ' ')
   echo "=================================================================="
   echo "[BLOCKED BY DEV-SETUP SECRET GUARD] Sensitive data risk detected!"
   echo "Mode     : $HOOK_MODE"
   echo "Findings : $count"
   echo "------------------------------------------------------------------"
-  sed 's/^/  /' "$TMP_FINDINGS"
+  LC_ALL=C sed 's/^/  /' "$TMP_FINDINGS"
   echo "------------------------------------------------------------------"
   echo "Action Required:"
   echo "  1. Move secrets to environment variables (.env) and register empty keys in .env.example."

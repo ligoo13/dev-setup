@@ -142,14 +142,31 @@ elseif ($HookMode -eq "full") {
     $allFiles = @($tracked) + @($untracked) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
     Check-FileList -Paths $allFiles
 
+    $BinaryExtRegex = '\.(png|jpe?g|webp|gif|bmp|ico|icns|avif|tiff?|psd|ai|eps|mp3|wav|ogg|flac|aac|m4a|mp4|mov|avi|mkv|webm|woff2?|ttf|otf|eot|pdf|zip|tar|tgz|gz|bz2|xz|7z|rar|wasm|py[cod]|so|dylib|dll|exe|bin|o|a|obj|class|jar|sqlite3?|db|dump|pcap(ng)?|p12|pfx|jks|keystore|pkcs12)$'
+
     foreach ($rel in $allFiles) {
         $norm = ($rel -replace '\\', '/').Trim()
         if ($norm -imatch '(^|/)templates/hooks/secret-guard\.(ps1|sh)$') { continue }
+        if ($norm -imatch $BinaryExtRegex) { continue }
         if (-not (Test-Path -LiteralPath $rel -PathType Leaf)) { continue }
         $item = Get-Item -LiteralPath $rel -Force
-        if ($item.Length -gt 2097152) { continue } # Skip binary/huge files > 2MB
+        if ($item.Length -gt 2097152 -or $item.Length -eq 0) { continue } # Skip empty or >2MB files
 
+        # Fast NUL-byte check on first 4KB to skip extensionless binary files
         try {
+            $fs = [System.IO.File]::OpenRead($item.FullName)
+            try {
+                $bufLen = [Math]::Min([int]$item.Length, 4096)
+                $buf = New-Object byte[] $bufLen
+                $readBytes = $fs.Read($buf, 0, $bufLen)
+                $hasNull = $false
+                for ($b = 0; $b -lt $readBytes; $b++) {
+                    if ($buf[$b] -eq 0) { $hasNull = $true; break }
+                }
+                if ($hasNull) { continue }
+            } finally {
+                $fs.Close()
+            }
             $rawLines = [System.IO.File]::ReadAllLines($item.FullName, [System.Text.Encoding]::UTF8)
         } catch {
             continue

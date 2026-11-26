@@ -253,7 +253,7 @@ do_git_setup() {
 }
 
 branch_slug() {
-  printf '%s' "$1" | tr '/\\: ' '----' | tr -cd 'a-zA-Z0-9._-'
+  printf '%s' "$1" | LC_ALL=C tr '/\\: ' '----' | LC_ALL=C tr -cd 'a-zA-Z0-9._-'
 }
 
 do_worktree_add() {
@@ -417,15 +417,19 @@ do_audit() {
   done
 
   if [ -d "$TARGET_DIR/docs" ]; then
-    for dpath in $(find "$TARGET_DIR/docs" -mindepth 1 -type d); do
+    while IFS= read -r dpath; do
+      [ -n "$dpath" ] || continue
       dname=$(basename -- "$dpath")
-      if ! printf '%s\n' "$dname" | grep -Eq '^[a-z0-9-]+$'; then
+      if ! printf '%s\n' "$dname" | LC_ALL=C grep -Eq '^[a-z0-9-]+$'; then
         echo "[WARN] Directory violates lowercase kebab-case standard: ${dpath#$TARGET_DIR/}"
         warn_c=$((warn_c + 1))
       fi
-    done
+    done <<EOF
+$(find "$TARGET_DIR/docs" -mindepth 1 -type d)
+EOF
 
-    for df in $(find "$TARGET_DIR/docs" -type f); do
+    while IFS= read -r df; do
+      [ -n "$df" ] || continue
       rel_df="${df#$TARGET_DIR/}"
       case "$rel_df" in
         docs/99-archive/*|*/.gitkeep|*/_template.md) continue ;;
@@ -435,7 +439,9 @@ do_audit() {
         echo "[WARN] Forbidden chaotic suffix (_v2/_final/_bak/etc.) in filename: $rel_df"
         warn_c=$((warn_c + 1))
       fi
-    done
+    done <<EOF
+$(find "$TARGET_DIR/docs" -type f)
+EOF
 
     check_spec_dir "docs/01-prd" '^PRD-[0-9]{3}-.+\.md$'
     check_spec_dir "docs/02-architecture" '^ARCH-[0-9]{3}-.+\.md$'
