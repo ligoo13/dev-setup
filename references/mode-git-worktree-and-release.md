@@ -50,7 +50,7 @@
   ```
 
 ### 3. 并行开发期间的「零冲突三原则」
-1. **先锁契约再分头写**：前后端或跨模块多 AI 并行前，必须在主目录 `develop` 分支先把 `docs/03-contracts/api-spec.md` 与 `data-dictionary.md` 定稿提交，再各自拉出 worktree 开发。
+1. **先锁契约再分头写**：前后端或跨模块多 AI 并行前，必须在主目录 `develop` 分支先把 `docs/03-contracts/API-000-全局接口契约总表.md` 与 `DATA-000-核心数据模型与字典.md` 定稿提交（同步刷新其元信息卡与文末修订记录），再各自拉出 worktree 开发。
 2. **主目录登记全局锁**：开辟 worktree 时，在主目录的 `docs/00-ai-hub/SESSIONS.md` 登记该 worktree 路径、分支名、负责的 AI 与锁定的业务模块。
 3. **子分支免冲突纪律**：在 `.worktrees/<slug>` 内部专注修改所属业务模块、测试与增量 `handoffs/`/`reviews/` 文件，**不在并行子分支内频繁改写全局 `STATE.md`**，避免多分支合回 `develop` 时产生状态文件冲突。
 
@@ -77,9 +77,10 @@
 当某一迭代（如 `iter-01-mvp`）开发完成准备验收发版时，严格按以下 6 步闭环：
 
 1. **执行健康巡检（`audit`）**：确认无未清理 `.tmp` 外泄垃圾、无未释放并行 worktree、无秘钥泄露、无遗漏的 `WIP` 或违规假数据 Mock。
-2. **真实验收核验**：打开对应的 `docs/05-acceptance/accept-XX-*.md`，在终端**逐条实跑**构建、Lint、自动化测试与核心场景验证命令，如实填写验收结果与时间戳；若有未通过项，立即阻断发版并退回修复。
+2. **真实验收核验**：打开对应的 `docs/05-acceptance/ACCEPT-XX-vX.Y.Z-*.md`，在终端**逐条实跑**构建、Lint、自动化测试与核心场景验证命令，如实填写验收结果（`PASS`/`FAIL`）与执行角色署名，验收全部通过后将该验收单及对应 `ITER-XX` 迭代单的顶部状态由 `ACTIVE` 更新为 `COMPLETED`，并追加文末修订记录；若有未通过项，立即阻断发版并退回修复。
 3. **文档与版本信息同步**：
-   - 检查 `README.md`、`docs/02-architecture/system-design.md`、`docs/03-contracts/` 是否与最新代码完全一致；
+   - 检查 `README.md`、`docs/02-architecture/ARCH-000-系统架构与模块设计总纲.md`、`docs/03-contracts/` 是否与最新代码完全一致；
+   - 检查是否有已被替代的旧草案需改为 `SUPERSEDED` 并移入 `docs/99-archive/`；
    - 更新 `CHANGELOG.md`：将本次迭代的新增特性（Added）、修复（Fixed）、变更（Changed）归档至新版本号标题下（遵循 SemVer：`0.1.0` → `0.2.0` / `0.1.1` / `1.0.0`）；
    - 更新 `docs/00-ai-hub/STATE.md` 当前版本号与里程碑状态，在 `develop` 提交归档 Commit：`chore(release): 完成 vX.Y.Z 验收归档与日志更新`。
 4. **合入稳定主干 `main` 并打 Tag**（合入前向用户简要展示验收摘要并确认版本号）：

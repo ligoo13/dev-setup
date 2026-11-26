@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Cross-platform POSIX sh bootstrap, worktree, and audit helper for dev-setup
+# Cross-platform POSIX sh bootstrap, worktree, secret-scan, and audit helper for dev-setup
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -11,10 +11,21 @@ TARGET_DIR=$(pwd)
 PROJECT_NAME=""
 SUMMARY="标准化 AI 协同软件工程项目"
 TECH_STACK="TBD"
+AUTHOR="dev-setup (AI)"
 BRANCH=""
 BASE_BRANCH="develop"
 DELETE_BRANCH=0
 FORCE=0
+
+DOC_PRD_000="docs/01-prd/PRD-000-全局产品需求总纲.md"
+DOC_ARCH_000="docs/02-architecture/ARCH-000-系统架构与模块设计总纲.md"
+DOC_ADR_0001="docs/02-architecture/adr/ADR-0001-初始架构与技术选型基线.md"
+DOC_API_000="docs/03-contracts/API-000-全局接口契约总表.md"
+DOC_DATA_000="docs/03-contracts/DATA-000-核心数据模型与字典.md"
+DOC_ITER_01="docs/04-iterations/ITER-01-v0.1.0-MVP首轮迭代计划.md"
+DOC_ACCEPT_01="docs/05-acceptance/ACCEPT-01-v0.1.0-MVP首轮验收单.md"
+DOC_OPS_000="docs/06-ops-and-pitfalls/OPS-000-环境搭建与部署运维手册.md"
+DOC_PITFALLS_000="docs/06-ops-and-pitfalls/PITFALLS-000-项目踩坑错题本.md"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -23,6 +34,7 @@ while [ "$#" -gt 0 ]; do
     --project-name|-ProjectName) PROJECT_NAME="$2"; shift 2 ;;
     --summary|-Summary)     SUMMARY="$2"; shift 2 ;;
     --tech-stack|-TechStack) TECH_STACK="$2"; shift 2 ;;
+    --author|-Author)       AUTHOR="$2"; shift 2 ;;
     --branch|-Branch)       BRANCH="$2"; shift 2 ;;
     --base-branch|-BaseBranch) BASE_BRANCH="$2"; shift 2 ;;
     --delete-branch|-DeleteBranch) DELETE_BRANCH=1; shift 1 ;;
@@ -40,6 +52,7 @@ render_template() {
   PROJECT_NAME_ENV="$PROJECT_NAME" \
   PROJECT_SUMMARY_ENV="$SUMMARY" \
   TECH_STACK_ENV="$TECH_STACK" \
+  AUTHOR_ENV="$AUTHOR" \
   DATE_ENV="$NOW_DATE" \
   DATETIME_ENV="$NOW_DATETIME" \
   awk '
@@ -56,6 +69,7 @@ render_template() {
       line = rep_lit(line, "{{PROJECT_NAME}}", ENVIRON["PROJECT_NAME_ENV"])
       line = rep_lit(line, "{{PROJECT_SUMMARY}}", ENVIRON["PROJECT_SUMMARY_ENV"])
       line = rep_lit(line, "{{TECH_STACK}}", ENVIRON["TECH_STACK_ENV"])
+      line = rep_lit(line, "{{AUTHOR}}", ENVIRON["AUTHOR_ENV"])
       line = rep_lit(line, "{{DATE}}", ENVIRON["DATE_ENV"])
       line = rep_lit(line, "{{DATETIME}}", ENVIRON["DATETIME_ENV"])
       print line
@@ -109,6 +123,7 @@ do_init() {
   echo "Target   : $TARGET_DIR"
   echo "Detected : $MODE_LABEL"
   echo "Project  : $PROJECT_NAME"
+  echo "Author   : $AUTHOR"
 
   mkdir -p \
     "$TARGET_DIR/.tmp" \
@@ -120,12 +135,15 @@ do_init() {
     "$TARGET_DIR/docs/03-contracts" \
     "$TARGET_DIR/docs/04-iterations" \
     "$TARGET_DIR/docs/05-acceptance" \
-    "$TARGET_DIR/docs/06-ops-and-pitfalls"
+    "$TARGET_DIR/docs/06-ops-and-pitfalls" \
+    "$TARGET_DIR/docs/99-archive"
 
-  if [ ! -e "$TARGET_DIR/.tmp/.gitkeep" ]; then
-    : > "$TARGET_DIR/.tmp/.gitkeep"
-    echo "[CREATED]  .tmp/.gitkeep"
-  fi
+  for keep_rel in ".tmp/.gitkeep" "docs/99-archive/.gitkeep"; do
+    if [ ! -e "$TARGET_DIR/$keep_rel" ]; then
+      : > "$TARGET_DIR/$keep_rel"
+      echo "[CREATED]  $keep_rel"
+    fi
+  done
 
   place_file "root/AGENTS.md.tmpl" "AGENTS.md"
   place_file "root/CLAUDE.md.tmpl" "CLAUDE.md"
@@ -140,15 +158,15 @@ do_init() {
   place_file "docs/00-ai-hub/SESSIONS.md.tmpl" "docs/00-ai-hub/SESSIONS.md"
   place_file "docs/00-ai-hub/handoff-template.md.tmpl" "docs/00-ai-hub/handoffs/_template.md"
   place_file "docs/00-ai-hub/review-template.md.tmpl" "docs/00-ai-hub/reviews/_template.md"
-  place_file "docs/01-prd/prd-overview.md.tmpl" "docs/01-prd/prd-overview.md"
-  place_file "docs/02-architecture/system-design.md.tmpl" "docs/02-architecture/system-design.md"
-  place_file "docs/02-architecture/adr-0001-initial-architecture.md.tmpl" "docs/02-architecture/adr/0001-initial-architecture.md"
-  place_file "docs/03-contracts/api-spec.md.tmpl" "docs/03-contracts/api-spec.md"
-  place_file "docs/03-contracts/data-dictionary.md.tmpl" "docs/03-contracts/data-dictionary.md"
-  place_file "docs/04-iterations/iter-01-mvp.md.tmpl" "docs/04-iterations/iter-01-mvp.md"
-  place_file "docs/05-acceptance/accept-01-mvp.md.tmpl" "docs/05-acceptance/accept-01-mvp.md"
-  place_file "docs/06-ops-and-pitfalls/deployment.md.tmpl" "docs/06-ops-and-pitfalls/deployment.md"
-  place_file "docs/06-ops-and-pitfalls/pitfalls.md.tmpl" "docs/06-ops-and-pitfalls/pitfalls.md"
+  place_file "docs/01-prd/prd-000-overview.md.tmpl" "$DOC_PRD_000"
+  place_file "docs/02-architecture/arch-000-system-design.md.tmpl" "$DOC_ARCH_000"
+  place_file "docs/02-architecture/adr-0001-initial-architecture.md.tmpl" "$DOC_ADR_0001"
+  place_file "docs/03-contracts/api-000-spec.md.tmpl" "$DOC_API_000"
+  place_file "docs/03-contracts/data-000-dictionary.md.tmpl" "$DOC_DATA_000"
+  place_file "docs/04-iterations/iter-01-mvp.md.tmpl" "$DOC_ITER_01"
+  place_file "docs/05-acceptance/accept-01-mvp.md.tmpl" "$DOC_ACCEPT_01"
+  place_file "docs/06-ops-and-pitfalls/ops-000-deployment.md.tmpl" "$DOC_OPS_000"
+  place_file "docs/06-ops-and-pitfalls/pitfalls-000-registry.md.tmpl" "$DOC_PITFALLS_000"
 
   echo "=== init scaffold complete ($MODE_LABEL) ==="
 }
@@ -193,6 +211,8 @@ do_git_setup() {
     git init -b main >/dev/null 2>&1 || { git init >/dev/null && git symbolic-ref HEAD refs/heads/main; }
     echo "[OK] Initialized new Git repository on 'main'."
   fi
+
+  git config core.quotepath false
 
   install_git_secret_hooks "$TARGET_DIR"
 
@@ -285,6 +305,37 @@ do_worktree_remove() {
   fi
 }
 
+check_spec_dir() {
+  sdir="$1"
+  sregex="$2"
+  full_sdir="$TARGET_DIR/$sdir"
+  [ -d "$full_sdir" ] || return 0
+
+  for mf in "$full_sdir"/*.md; do
+    [ -f "$mf" ] || continue
+    mname=$(basename -- "$mf")
+    rel_mf="$sdir/$mname"
+    if printf '%s\n' "$mname" | grep -Eq "$sregex"; then
+      pass_c=$((pass_c + 1))
+    else
+      echo "[WARN] Document filename violates '$sregex' naming rule: $rel_mf"
+      warn_c=$((warn_c + 1))
+    fi
+
+    if grep -q "文档元信息卡" "$mf" && grep -q "最后修改" "$mf" && grep -Eq '(DRAFT|ACTIVE|COMPLETED|SUPERSEDED|DEPRECATED)' "$mf" && grep -q "文档变更记录" "$mf"; then
+      pass_c=$((pass_c + 1))
+    else
+      echo "[WARN] Document missing standard metadata card, controlled status tag, or revision history table: $rel_mf"
+      warn_c=$((warn_c + 1))
+    fi
+
+    if grep -Eq '：`?(SUPERSEDED|DEPRECATED)`?' "$mf"; then
+      echo "[WARN] Superseded/Deprecated document should be archived to docs/99-archive/: $rel_mf"
+      warn_c=$((warn_c + 1))
+    fi
+  done
+}
+
 do_audit() {
   TARGET_DIR=$(CDPATH= cd -- "$TARGET_DIR" && pwd)
   pass_c=0
@@ -304,12 +355,12 @@ do_audit() {
     "docs/00-index.md" \
     "docs/00-ai-hub/STATE.md" \
     "docs/00-ai-hub/SESSIONS.md" \
-    "docs/01-prd/prd-overview.md" \
-    "docs/02-architecture/system-design.md" \
-    "docs/03-contracts/api-spec.md" \
-    "docs/03-contracts/data-dictionary.md" \
-    "docs/06-ops-and-pitfalls/deployment.md" \
-    "docs/06-ops-and-pitfalls/pitfalls.md"
+    "$DOC_PRD_000" \
+    "$DOC_ARCH_000" \
+    "$DOC_API_000" \
+    "$DOC_DATA_000" \
+    "$DOC_OPS_000" \
+    "$DOC_PITFALLS_000"
   do
     if [ -f "$TARGET_DIR/$rel" ]; then
       pass_c=$((pass_c + 1))
@@ -325,7 +376,8 @@ do_audit() {
     "docs/00-ai-hub/reviews" \
     "docs/02-architecture/adr" \
     "docs/04-iterations" \
-    "docs/05-acceptance"
+    "docs/05-acceptance" \
+    "docs/99-archive"
   do
     if [ -d "$TARGET_DIR/$rdir" ]; then
       pass_c=$((pass_c + 1))
@@ -352,7 +404,7 @@ do_audit() {
     case "$fname" in
       AGENTS.md|CLAUDE.md|GEMINI.md|README.md|CHANGELOG.md|LICENSE.md) ;;
       *.md)
-        echo "[WARN] Non-standard Markdown file in project root: $fname (consider moving under docs/)"
+        echo "[WARN] Non-standard Markdown file in project root: $fname (move under docs/)"
         warn_c=$((warn_c + 1))
         ;;
     esac
@@ -363,6 +415,36 @@ do_audit() {
         ;;
     esac
   done
+
+  if [ -d "$TARGET_DIR/docs" ]; then
+    for dpath in $(find "$TARGET_DIR/docs" -mindepth 1 -type d); do
+      dname=$(basename -- "$dpath")
+      if ! printf '%s\n' "$dname" | grep -Eq '^[a-z0-9-]+$'; then
+        echo "[WARN] Directory violates lowercase kebab-case standard: ${dpath#$TARGET_DIR/}"
+        warn_c=$((warn_c + 1))
+      fi
+    done
+
+    for df in $(find "$TARGET_DIR/docs" -type f); do
+      rel_df="${df#$TARGET_DIR/}"
+      case "$rel_df" in
+        docs/99-archive/*|*/.gitkeep|*/_template.md) continue ;;
+      esac
+      df_base=$(basename -- "$df")
+      if printf '%s\n' "$df_base" | grep -Eiq '(_v[0-9]+|_new|_final|_old|_bak|_copy|副本|最终版)\.[a-zA-Z0-9]+$'; then
+        echo "[WARN] Forbidden chaotic suffix (_v2/_final/_bak/etc.) in filename: $rel_df"
+        warn_c=$((warn_c + 1))
+      fi
+    done
+
+    check_spec_dir "docs/01-prd" '^PRD-[0-9]{3}-.+\.md$'
+    check_spec_dir "docs/02-architecture" '^ARCH-[0-9]{3}-.+\.md$'
+    check_spec_dir "docs/02-architecture/adr" '^ADR-[0-9]{4}-.+\.md$'
+    check_spec_dir "docs/03-contracts" '^(API|DATA)-[0-9]{3}-.+\.md$'
+    check_spec_dir "docs/04-iterations" '^ITER-[0-9]{2}-v[0-9]+\.[0-9]+\.[0-9]+-.+\.md$'
+    check_spec_dir "docs/05-acceptance" '^(ACCEPT|TEST)-[0-9]{2}-v[0-9]+\.[0-9]+\.[0-9]+-.+\.md$'
+    check_spec_dir "docs/06-ops-and-pitfalls" '^(OPS|PITFALLS)-[0-9]{3}-.+\.md$'
+  fi
 
   if [ -d "$TARGET_DIR/.git" ]; then
     cd "$TARGET_DIR"

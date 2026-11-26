@@ -13,8 +13,8 @@
 2. `docs/00-ai-hub/STATE.md`（掌握全局里程碑、已完成冻结模块、当前进行中任务与阻塞点）
 3. `docs/00-ai-hub/SESSIONS.md` + `git status` + `git branch --show-current` + `git worktree list`（确认当前是否有其他并行终端持有模块锁或独立 worktree）
 4. `docs/00-ai-hub/handoffs/` 下按文件名排序**最新的一篇交接单**（若存在，获取上一棒 AI 的细节叮嘱）
-5. `docs/06-ops-and-pitfalls/pitfalls.md`（查阅踩坑错题本，避免重复尝试已被证伪的死胡同）
-6. 当前活跃迭代文档（如 `docs/04-iterations/iter-01-mvp.md`）
+5. `docs/06-ops-and-pitfalls/PITFALLS-000-项目踩坑错题本.md`（查阅踩坑错题本，避免重复尝试已被证伪的死胡同）
+6. 当前活跃迭代文档（如 `docs/04-iterations/ITER-01-v0.1.0-MVP首轮迭代计划.md`，忽略 `docs/99-archive/` 已归档旧档）
 
 ### 2. 输出 ≤5 行的「进度对齐简报」
 在修改任何业务代码之前，先向用户发送简短清晰的对齐简报：
@@ -41,13 +41,13 @@
 - 将开发过程中产生的任何临时调试脚本、一次性测试输入输出全部移入 `.tmp/` 或直接删除，确保项目根目录与源码目录零垃圾残留。
 - 若代码处于可编译/测试通过状态，运行标准验证命令确认状态；若做到一半尚未完工，如实记录卡点（如需保存现场，在当前特性分支提交 `wip(<scope>): 保存 <任务> 阶段现场`）。
 
-### 2. 沉淀踩坑经验（`pitfalls.md`）与强制文档脱敏
-- 回顾本次会话是否遇到过环境配置怪癖、第三方库兼容性陷阱、或者尝试过某条走不通的技术死胡同？若有，**立即追加**到 `docs/06-ops-and-pitfalls/pitfalls.md`（写明：现象 → 错误尝试 → 根因与正确解法）。
-- **文档脱敏红线**：写入 `pitfalls.md`、`handoffs/` 或 `reviews/` 前，必须剥离所有真实 API Key、服务器公网 IP、SSH 口令、带真实 `Bearer` / `Cookie` 的调试报文及真实客户隐私数据，一律使用 `<REDACTED>` 或占位符替代。
+### 2. 沉淀踩坑经验（`PITFALLS-000`）与强制文档脱敏
+- 回顾本次会话是否遇到过环境配置怪癖、第三方库兼容性陷阱、或者尝试过某条走不通的技术死胡同？若有，**立即追加**到 `docs/06-ops-and-pitfalls/PITFALLS-000-项目踩坑错题本.md`（写明：现象 → 错误尝试 → 根因与正确解法，并同步更新其顶部「最后修改」与文末「变更记录」）。
+- **文档脱敏红线**：写入错题本、`handoffs/` 或 `reviews/` 前，必须剥离所有真实 API Key、服务器公网 IP、SSH 口令、带真实 `Bearer` / `Cookie` 的调试报文及真实客户隐私数据，一律使用 `<REDACTED>` 或占位符替代。
 
 ### 3. 生成独立增量交接单（零合并冲突设计）
 - 参考 `docs/00-ai-hub/handoffs/_template.md`，在 `docs/00-ai-hub/handoffs/` 下新建独立文件：
-  - **命名规范**：`YYYY-MM-DD-HHmm-<当前AI>-to-<下一棒AI或next>-<简短主题>.md`（例如 `2026-11-26-0130-claude-to-codex-auth-api.md`）
+  - **命名规范**：`YYYY-MM-DD-HHmm-<当前AI>-to-<下一棒AI或Next>-<中文直白主题>.md`（例如 `2026-11-26-0130-Claude-to-Codex-登录鉴权接口交接.md`）
 - **交接单必填 5 要素**：
   1. **本次已完成事项与关键变更文件清单**（精确到文件路径）
   2. **验证状态**（哪些命令已跑通，哪些尚未覆盖）
@@ -72,7 +72,7 @@
 
 1. **严禁直接改写业务代码或覆盖他人方案**：比选与审查阶段属于只读分析 + 独立文档输出。
 2. **独立命名落盘至 `docs/00-ai-hub/reviews/`**：
-   - 方案比选命名：`YYYY-MM-DD-proposal-<主题>-<AI名称>.md`
-   - 代码审查命名：`YYYY-MM-DD-review-<分支或模块>-by-<AI名称>.md`
+   - 方案比选命名：`YYYY-MM-DD-PROPOSAL-<中文直白主题>-by-<AI标识>.md`
+   - 代码审查命名：`YYYY-MM-DD-REVIEW-<中文模块或分支主题>-by-<AI标识>.md`
 3. **审查报告结构（参考 `reviews/_template.md`）**：必须按 `P0 阻断性缺陷 / 安全漏洞`、`P1 逻辑错误 / 契约偏离`、`P2 可维护性建议` 分级列出精确文件路径与行号，并核查是否违反 `AGENTS.md` 四大红线（如暗藏假数据 Mock、漏更接口契约等）。
 4. **拍板落地闭环**：待人类最终拍板选定方案后，由执行 AI 将最终决议写入 `docs/02-architecture/adr/`（架构决策）或更新 `docs/04-iterations/` 任务表，再进入编码实现。

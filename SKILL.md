@@ -21,13 +21,15 @@ description: >-
 | **`handoff`** | 当前会话准备停工、上下文快满、换另一个 AI 接力，或多 AI 方案比选/交叉审查 | [mode-resume-and-handoff.md](./references/mode-resume-and-handoff.md) |
 | **`worktree`** | 开启第 2+ 个终端并行开发不同功能分支，或回收已合并的并行工作区 | [mode-git-worktree-and-release.md](./references/mode-git-worktree-and-release.md) |
 | **`release`** | 完成某一轮迭代开发，执行验收核对、合入 `main`、更新日志并打版本号 Tag | [mode-git-worktree-and-release.md](./references/mode-git-worktree-and-release.md) |
-| **`audit`** | 项目运行一段时间后检查文档是否腐烂、有无根目录垃圾、僵尸锁或规范偏离 | [mode-audit-and-doc-ssot.md](./references/mode-audit-and-doc-ssot.md) |
+| **`audit`** | 项目运行一段时间后检查文档是否腐烂、有无根目录垃圾、命名违规、僵尸锁或规范偏离 | [mode-audit-and-doc-ssot.md](./references/mode-audit-and-doc-ssot.md) |
+
+> **新建或修改任何文档前必读标准**：凡涉及新建文件夹、新增阶段文档（需求/迭代/测试/验收/ADR/交接/评审）或修改现有文档，必须严格遵守 **[文件命名、信息标签词典与变更溯源标准](./references/standards-naming-and-metadata.md)**。
 
 ---
 
-## 2. 全项目唯一标准拓扑基准（禁止擅自变形）
+## 2. 全项目唯一标准拓扑与文档命名基准（禁止擅自变形）
 
-无论项目大小或技术栈如何，所有受管项目严格对齐以下工程与文档外壳（**注意：`init` 阶段绝不预建 `src/` 等空业务源码目录，留待具体技术栈脚手架生成后再回填架构文档与 `README.md`**）：
+无论项目大小或技术栈如何，所有受管项目严格对齐以下工程与文档外壳（**注意：`init` 阶段绝不预建 `src/` 等空业务源码目录；文件夹统一用小写英文 `kebab-case`；`docs/` 内文档采用「大写类型码-编号-中文直白主题.md」，其中 `-000-` 代表全周期仅一份原地更新的常青主文档**）：
 
 ```text
 <project-root>/
@@ -38,21 +40,22 @@ description: >-
 ├── README.md                        # 【面向人类】项目定位、技术栈、快速启动命令、目录速览与文档入口
 ├── CHANGELOG.md                     # 【版本演进】基于 SemVer 的里程碑变更归档
 ├── .env.example                     # 【安全防呆】环境变量键名模板（严禁提交真实 .env 与秘钥）
-├── .gitignore                       # 【版本防护】默认忽略秘钥、依赖产物、.tmp/* 与 .worktrees/
+├── .gitignore                       # 【版本防护】默认忽略秘钥、敏感库快照、.tmp/* 与 .worktrees/
 ├── .tmp/                            # 【临时草稿隔离区】AI 一次性测试脚本与草稿唯一存放处（Git 忽略内容）
 └── docs/                            # 【全项目正式文档与 AI 协同唯一中心】
     ├── 00-index.md                  # 文档总导航 + 单一事实源（SSOT）与代码变更联动矩阵
     ├── 00-ai-hub/                   # AI 运行时控制中枢
     │   ├── STATE.md                 # 全局断点状态面板（当前阶段、已完成禁改区、进行中、阻塞项、下一步）
     │   ├── SESSIONS.md              # 多终端/多 AI 活跃会话登记与模块锁表
-    │   ├── handoffs/                # 跨会话/跨 AI 增量交接单（独立成档，零合并冲突）
-    │   └── reviews/                 # 多 AI 对抗方案比选稿与交叉 Code Review 报告（独立成档）
-    ├── 01-prd/                      # 需求文档（prd-overview.md 等：背景目标、功能范围、明确不做边界）
-    ├── 02-architecture/             # 架构设计（system-design.md + adr/ 关键技术决策记录）
-    ├── 03-contracts/                # 多端并行对齐基准（api-spec.md 接口契约 + data-dictionary.md 数据字典）
-    ├── 04-iterations/               # 迭代计划与任务拆解（iter-01-mvp.md ...）
-    ├── 05-acceptance/               # 验收标准、真实验证命令与阶段验收报告（accept-01-mvp.md ...）
-    └── 06-ops-and-pitfalls/         # deployment.md 运维部署手册 + pitfalls.md「踩坑错题本」
+    │   ├── handoffs/                # 交接单：YYYY-MM-DD-HHmm-<交出AI>-to-<接收AI>-<中文主题>.md
+    │   └── reviews/                 # 方案与审查：YYYY-MM-DD-<PROPOSAL|REVIEW>-<中文主题>-by-<AI>.md
+    ├── 01-prd/                      # 需求中心：PRD-000-全局产品需求总纲.md + PRD-00X-<中文主题>.md
+    ├── 02-architecture/             # 架构中心：ARCH-000-系统架构与模块设计总纲.md + adr/ADR-000X-<中文主题>.md
+    ├── 03-contracts/                # 契约中心：API-000-全局接口契约总表.md + DATA-000-核心数据模型与字典.md
+    ├── 04-iterations/               # 迭代中心：ITER-01-v0.1.0-MVP首轮迭代计划.md（按 ITER-XX-vX.Y.Z-<中文主题> 递增）
+    ├── 05-acceptance/               # 验收测试：ACCEPT-01-v0.1.0-MVP首轮验收单.md / TEST-XX-vX.Y.Z-<中文主题>.md
+    ├── 06-ops-and-pitfalls/         # 运维与错题：OPS-000-环境搭建与部署运维手册.md + PITFALLS-000-项目踩坑错题本.md
+    └── 99-archive/                  # 历史归档区：存放已标记 SUPERSEDED / DEPRECATED 的淘汰历史文档
 ```
 
 ---
@@ -61,9 +64,11 @@ description: >-
 
 在执行本 Skill 的任何模式，以及编写目标项目的 `AGENTS.md` 时，必须强制贯彻以下准则：
 
-1. **进场先对齐铁律**：新会话开工前，必读 `AGENTS.md` → `docs/00-ai-hub/STATE.md` → `SESSIONS.md` → 最新 `handoffs/` → `docs/06-ops-and-pitfalls/pitfalls.md`，先向用户输出 **≤5 行的「进度对齐简报」**，再动手修改代码。
+1. **进场先对齐铁律**：新会话开工前，必读 `AGENTS.md` → `docs/00-ai-hub/STATE.md` → `SESSIONS.md` → 最新 `handoffs/` → `docs/06-ops-and-pitfalls/PITFALLS-000-项目踩坑错题本.md`，先向用户输出 **≤5 行的「进度对齐简报」**，再动手修改代码。
 2. **反糊弄铁律**：严禁未经用户明确允许用硬编码假数据（Mock / Stub / 空 `TODO`）冒充已完成；未在终端实际跑通验证命令前，严禁声称“已完成”。
-3. **防越界与洁癖铁律**：严守最小改动半径，禁止顺手重构无关文件、擅自新增/升级重型依赖、触碰其他 AI 在 `SESSIONS.md` 锁定的模块，或污染项目根目录（临时文件一律进 `.tmp/`）。
+3. **防越界、洁癖与标准命名溯源铁律**：
+   - 严守最小改动半径，禁止顺手重构无关文件、擅自新增/升级重型依赖、触碰其他 AI 在 `SESSIONS.md` 锁定的模块，或污染项目根目录（临时文件一律进 `.tmp/`）。
+   - **命名、标签与修订留痕**：文件夹一律用小写 `kebab-case`，全仓严禁 `_v2`/`_new`/`_final`/`_bak` 等混乱后缀；`docs/01`~`06` 所有文档必须严格按公式命名，顶部包含**中文文档元信息卡**（使用受控状态标签 `DRAFT`/`ACTIVE`/`COMPLETED`/`SUPERSEDED`/`DEPRECATED`），每次修改正文必须同步更新元信息卡中的「最后修改」并在文末《文档变更记录》追加记录行；作废旧文档一律改状态后归档至 `docs/99-archive/`。
 4. **数据安全与脱敏推送铁律（双保险强制门禁）**：
    - **代码与配置零硬编码**：严禁在源码、脚本、测试、配置文件中硬编码任何真实 API Key（`sk-...`、`AIza...`、`ghp_...` 等）、云厂商 AK/SK（`AKIA...`、`LTAI...`、`AKID...`）、私钥、带明文密码的数据库连接串或飞书/企微/钉钉/Slack Webhook Token。
    - **文档与交接单强制脱敏**：编写 `README.md`、`deployment.md`、`pitfalls.md`、`handoffs/` 与 `reviews/` 时，严禁写入真实生产服务器公网 IP、SSH 凭据、未脱敏的 `Authorization` / `Cookie` 调试报文或真实用户隐私数据（PII，如真实手机号/邮箱/业务库导出样本），一律替换为 `<YOUR_API_KEY>`、`<REDACTED>` 等安全占位符。

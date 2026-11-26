@@ -14,14 +14,15 @@
 | **面向人类的快速上手门面** | `README.md` | 首次落地业务源码目录结构、核心启动方式改变、重大特性上线 |
 | **全局进度断点与冻结边界** | `docs/00-ai-hub/STATE.md` | 完成子任务、切换迭代阶段、遇到新阻塞项、模块验收冻结 |
 | **多端并发锁与活跃工作区** | `docs/00-ai-hub/SESSIONS.md` | 新开并行终端/worktree 认领模块，或完工/交接释放锁 |
-| **业务目标与功能范围边界** | `docs/01-prd/prd-overview.md` | 新增/砍掉业务功能、变更核心业务规则或不做边界 |
-| **系统架构与源码目录映射** | `docs/02-architecture/system-design.md` | 初始化业务代码目录、拆分新模块/服务、引入新核心外部依赖 |
-| **重大技术选型与架构取舍** | `docs/02-architecture/adr/NNNN-*.md` | 决定关键框架/存储/鉴权方案，或推翻历史技术决策 |
-| **接口协议与数据模型结构** | `docs/03-contracts/api-spec.md` & `data-dictionary.md` | 新增/修改前后端 API 路径或出入参、新增/变更数据库表字段 |
-| **当前周期任务拆解** | `docs/04-iterations/iter-XX-*.md` | 迭代计划制定、开发中期需求变更或任务重排 |
-| **里程碑验收标准与实测记录** | `docs/05-acceptance/accept-XX-*.md` | 制定阶段完成标准、发版前实跑验证打勾 |
-| **环境变量与部署手册** | `.env.example` + `docs/06-ops-and-pitfalls/deployment.md` | 代码中新增读取任何环境变量、变更构建部署步骤 |
-| **已证伪死胡同与环境怪癖** | `docs/06-ops-and-pitfalls/pitfalls.md` | 排查出隐蔽 Bug、环境兼容坑或确认某条技术方案走不通 |
+| **业务目标与功能范围边界** | `docs/01-prd/PRD-000-全局产品需求总纲.md`（及 `PRD-00X-*.md`） | 新增/砍掉业务功能、变更核心业务规则或不做边界 |
+| **系统架构与源码目录映射** | `docs/02-architecture/ARCH-000-系统架构与模块设计总纲.md` | 初始化业务代码目录、拆分新模块/服务、引入新核心外部依赖 |
+| **重大技术选型与架构取舍** | `docs/02-architecture/adr/ADR-000X-*.md` | 决定关键框架/存储/鉴权方案，或推翻历史技术决策 |
+| **接口协议与数据模型结构** | `docs/03-contracts/API-000-全局接口契约总表.md` & `DATA-000-核心数据模型与字典.md` | 新增/修改前后端 API 路径或出入参、新增/变更数据库表字段 |
+| **当前周期任务拆解** | `docs/04-iterations/ITER-XX-vX.Y.Z-*.md` | 迭代计划制定、开发中期需求变更或任务重排 |
+| **里程碑验收标准与实测记录** | `docs/05-acceptance/ACCEPT-XX-vX.Y.Z-*.md`（及 `TEST-XX-*.md`） | 制定阶段完成标准、发版前实跑验证打勾 |
+| **环境变量与部署手册** | `.env.example` + `docs/06-ops-and-pitfalls/OPS-000-环境搭建与部署运维手册.md` | 代码中新增读取任何环境变量、变更构建部署步骤 |
+| **已证伪死胡同与环境怪癖** | `docs/06-ops-and-pitfalls/PITFALLS-000-项目踩坑错题本.md` | 排查出隐蔽 Bug、环境兼容坑或确认某条技术方案走不通 |
+| **已替代或作废历史方案** | `docs/99-archive/`（状态标为 `SUPERSEDED` / `DEPRECATED`） | 旧方案被新文档替代或功能废弃时归档封存 |
 | **历史版本发布记录** | `CHANGELOG.md` | 每次通过验收合并 `main` 发布新语义化版本 |
 
 ---
@@ -47,7 +48,10 @@
 1. **桥接文件完整性**：`CLAUDE.md`、`GEMINI.md`、`.cursor/rules/00-project-os.mdc` 是否完好指向 `AGENTS.md`，有无私自写入与 `AGENTS.md` 冲突的独立规则？
 2. **僵尸锁与悬空 Worktree 核查**：对比 `git worktree list` 与 `docs/00-ai-hub/SESSIONS.md`，是否存在工作区早已删除或分支早已合并、但 `SESSIONS.md` 仍挂着未释放的僵尸锁？
 3. **断点面板失真核查**：对比最近 5~10 条 `git log --oneline` 与 `docs/00-ai-hub/STATE.md`，是否有代码早已提交完成但 `STATE.md` 仍停留在旧状态？
-4. **文档防腐烂抽检**：对比实际源码目录树、依赖配置文件（如 `package.json` / `pyproject.toml` / `go.mod`）及环境变量使用情况，检查 `README.md`、`system-design.md`、`03-contracts/`、`.env.example` 是否存在明显漏更？
+4. **文档防腐烂与溯源合规抽检**：
+   - 核查是否有新增文档违反 [命名与元信息标准](./standards-naming-and-metadata.md)（如文件夹含大写/中文、文件名出现 `_v2`/`_final` 后缀、缺少顶部「文档元信息卡」、状态词不在 5 枚举内、或修改了正文却未更新「最后修改」与文末「文档变更记录」）；
+   - 核查是否有已被替代的过期文档仍滞留在 `docs/01`~`06` 未移入 `docs/99-archive/`；
+   - 对比实际源码目录树、依赖配置文件（如 `package.json` / `pyproject.toml` / `go.mod`）及环境变量使用情况，检查 `README.md`、`ARCH-000`、`03-contracts/`、`.env.example` 是否存在明显漏更？
 
 ### Step 3：输出结构化《项目健康巡检报告》并分级修复
 按以下结构向用户汇报巡检结果：

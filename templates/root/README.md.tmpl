@@ -11,8 +11,7 @@
 
 ## 1. 项目简介
 
-<!-- 在此补充项目的业务背景、解决的核心问题与目标用户场景 -->
-本项目围绕「{{PROJECT_SUMMARY}}」构建，采用标准化文档驱动与多 AI 协同工程架构维护。
+本项目围绕「{{PROJECT_SUMMARY}}」构建，采用标准化文档驱动、全量变更溯源与多 AI 协同工程架构维护。
 
 ---
 
@@ -20,7 +19,7 @@
 
 ### 环境要求
 - 技术栈环境：`{{TECH_STACK}}`
-- 环境变量配置：复制 `.env.example` 为 `.env` 并按需填入本地配置。
+- 环境变量配置：复制 `.env.example` 为 `.env` 并按需填入本地配置（严禁提交真实 `.env`）。
 
 ### 常用命令
 ```bash
@@ -40,27 +39,28 @@
 
 ```text
 .
-├── AGENTS.md                  # AI 协作总宪法（进场必读唯一事实源）
-├── CLAUDE.md / GEMINI.md      # 跨 AI 工具规则桥接文件
-├── CHANGELOG.md               # 版本发布演进记录
-├── .env.example               # 环境变量配置模板
-├── .tmp/                      # 本地临时验证脚本与草稿隔离区（Git 忽略）
-└── docs/                      # 项目全生命周期文档与 AI 协同中心
-    ├── 00-index.md            # 文档总索引与更新联动表
-    ├── 00-ai-hub/             # 断点状态面板(STATE)、并发锁(SESSIONS)、交接单与评审报告
-    ├── 01-prd/                # 产品需求与范围边界
-    ├── 02-architecture/       # 系统架构设计与 ADR 技术决策记录
-    ├── 03-contracts/          # 接口契约与数据字典
-    ├── 04-iterations/         # 迭代计划与任务拆解
-    ├── 05-acceptance/         # 验收标准与实测报告
-    └── 06-ops-and-pitfalls/   # 运维部署指南与「踩坑错题本」
+├── AGENTS.md                        # AI 协作总宪法（进场必读唯一事实源）
+├── CLAUDE.md / GEMINI.md            # 跨 AI 工具规则桥接文件
+├── CHANGELOG.md                     # 语义化版本发布演进记录
+├── .env.example                     # 环境变量配置模板
+├── .tmp/                            # 本地临时验证脚本与草稿隔离区（Git 忽略）
+└── docs/                            # 项目全生命周期文档与 AI 协同中心
+    ├── 00-index.md                  # 文档总索引与单一事实源(SSOT)导航
+    ├── 00-ai-hub/                   # 断点面板(STATE)、并发锁(SESSIONS)、交接单与评审报告
+    ├── 01-prd/                      # 产品需求（PRD-000 总纲 + PRD-00X 子需求）
+    ├── 02-architecture/             # 系统架构（ARCH-000 总纲 + adr/ADR-000X 决策记录）
+    ├── 03-contracts/                # 并行契约（API-000 接口总表 + DATA-000 数据字典）
+    ├── 04-iterations/               # 迭代计划（ITER-XX-vX.Y.Z-中文主题.md）
+    ├── 05-acceptance/               # 测试验收（ACCEPT-XX-vX.Y.Z-中文主题.md）
+    ├── 06-ops-and-pitfalls/         # 部署手册（OPS-000）与踩坑错题本（PITFALLS-000）
+    └── 99-archive/                  # 已替代或作废历史文档封存区
 ```
 
-*(注：业务源码目录在框架初始化落地后同步补充至上方目录树及 `docs/02-architecture/system-design.md`。)*
+*(注：业务源码目录在框架初始化落地后同步补充至上方目录树及 `docs/02-architecture/ARCH-000-系统架构与模块设计总纲.md`。)*
 
 ---
 
 ## 4. 协作与开发指引
 
-- **人类开发者**：请先阅读 [产品需求总纲](./docs/01-prd/prd-overview.md) 与 [系统架构设计](./docs/02-architecture/system-design.md)。
-- **AI 编程助手**：进场必须优先遵循 [AGENTS.md](./AGENTS.md) 中的断点对齐、双主干分支与多端隔离协议。
+- **人类开发者**：请先阅读 [全局产品需求总纲](./docs/01-prd/PRD-000-全局产品需求总纲.md) 与 [系统架构设计总纲](./docs/02-architecture/ARCH-000-系统架构与模块设计总纲.md)。
+- **AI 编程助手**：进场必须优先遵循 [AGENTS.md](./AGENTS.md) 中的断点对齐、文档元信息留痕、双主干分支与敏感信息安全门禁。

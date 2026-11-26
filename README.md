@@ -9,7 +9,7 @@
 
 - [1. 为什么构建 `dev-setup`？](#1-为什么构建-dev-setup)
 - [2. 核心设计哲学与工作流全景](#2-核心设计哲学与工作流全景)
-- [3. 受管项目的统一标准目录拓扑](#3-受管项目的统一标准目录拓扑)
+- [3. 受管项目的统一标准目录拓扑与命名溯源体系](#3-受管项目的统一标准目录拓扑与命名溯源体系)
 - [4. 全平台 / 全 AI 客户端安装指南](#4-全平台--全-ai-客户端安装指南)
   - [4.0 前置准备：GitHub 私有仓库鉴权](#40-前置准备github-私有仓库鉴权)
   - [4.1 懒人首选：一句话让任意 AI 自动安装](#41-懒人首选一句话让任意-ai-自动安装)
@@ -57,8 +57,9 @@ flowchart LR
 
 ---
 
-## 3. 受管项目的统一标准目录拓扑
+## 3. 受管项目的统一标准目录拓扑与命名溯源体系
 
+### 3.1 标准工程与文档拓扑
 无论项目体量大小、采用何种语言框架，`dev-setup` 统一构建以下**肌肉记忆级标准工程外壳**（注：`init` 阶段绝不预建空的 `src/` 业务目录，避免阻塞后续 `create-next-app`、`uv init`、`pnpm create` 等框架脚手架；待代码框架初始化后再自动回填目录树）：
 
 ```text
@@ -70,22 +71,31 @@ flowchart LR
 ├── README.md                        # 【面向人类】项目定位、技术栈、快速启动命令与文档总入口
 ├── CHANGELOG.md                     # 【版本演进】遵循 Keep a Changelog 与 SemVer 的发版历史
 ├── .env.example                     # 【安全防呆】环境变量键名模板（配合 .gitignore 严防秘钥泄露）
-├── .gitignore                       # 【版本防护】默认忽略秘钥、构建产物、.tmp/* 与 .worktrees/
+├── .gitignore                       # 【版本防护】默认忽略秘钥、本地库快照、.tmp/* 与 .worktrees/
 ├── .tmp/                            # 【临时草稿隔离区】AI 一次性测试脚本与草稿唯一存放处（Git 忽略内容）
 └── docs/                            # 【全项目正式文档与 AI 协同唯一中心】
     ├── 00-index.md                  # 文档总导航 + 单一事实源（SSOT）与代码变更联动表
     ├── 00-ai-hub/                   # AI 运行时控制中枢（排最前，打开 docs 第一眼可见）
     │   ├── STATE.md                 # 全局断点状态面板（当前阶段、已验收禁改区、进行中、阻塞项、下一步）
     │   ├── SESSIONS.md              # 多终端 / 多 AI 活跃会话登记与模块锁表
-    │   ├── handoffs/                # 跨会话 / 跨 AI 增量交接单（独立成档，彻底消灭合并冲突）
-    │   └── reviews/                 # 多 AI 对抗方案比选稿与交叉 Code Review 报告（独立成档）
-    ├── 01-prd/                      # 需求文档（prd-overview.md：背景目标、功能范围、明确不做边界）
-    ├── 02-architecture/             # 架构设计（system-design.md + adr/ 架构决策记录，防后人盲目推翻）
-    ├── 03-contracts/                # 多端并行对齐基准（api-spec.md 接口契约 + data-dictionary.md 数据字典）
-    ├── 04-iterations/               # 迭代计划与任务拆解（iter-01-mvp.md ...）
-    ├── 05-acceptance/               # 验收标准、真实验证命令与阶段验收签收单（accept-01-mvp.md ...）
-    └── 06-ops-and-pitfalls/         # deployment.md 部署手册 + pitfalls.md「踩坑错题本」（防重复踩死胡同）
+    │   ├── handoffs/                # 交接单：YYYY-MM-DD-HHmm-<交出AI>-to-<接收AI>-<中文主题>.md
+    │   └── reviews/                 # 方案与审查：YYYY-MM-DD-<PROPOSAL|REVIEW>-<中文主题>-by-<AI>.md
+    ├── 01-prd/                      # 需求中心：PRD-000-全局产品需求总纲.md + PRD-00X-<中文主题>.md
+    ├── 02-architecture/             # 架构中心：ARCH-000-系统架构与模块设计总纲.md + adr/ADR-000X-<中文主题>.md
+    ├── 03-contracts/                # 并行契约：API-000-全局接口契约总表.md + DATA-000-核心数据模型与字典.md
+    ├── 04-iterations/               # 迭代计划：ITER-01-v0.1.0-MVP首轮迭代计划.md（序号递增）
+    ├── 05-acceptance/               # 测试验收：ACCEPT-01-v0.1.0-MVP首轮验收单.md（与 ITER-XX 1:1 咬合）
+    ├── 06-ops-and-pitfalls/         # 运维与错题：OPS-000-环境搭建与部署运维手册.md + PITFALLS-000-项目踩坑错题本.md
+    └── 99-archive/                  # 历史封存区：存放状态改为 SUPERSEDED / DEPRECATED 的淘汰历史文档
 ```
+
+### 3.2 五维文件命名、信息标签与多 AI 变更溯源规范
+为防止多轮迭代后各 AI 乱起名、职责不清、无法追溯谁改了文档，`dev-setup` 对所有文件强制执行（并由 `audit` 自动巡检校验）：
+1. **目录与后缀铁律**：所有文件夹强制全小写英文 `kebab-case`；全仓严禁出现 `_v2`、`_new`、`_final`、`_old`、`_bak`、`副本`、`最终版` 等无序后缀。
+2. **常青 `000` 主文档 vs 阶段编号文档**：`-000-` 结尾的主文档全周期仅此一份原地更新；阶段文档严格按 `PRD-00X-中文主题.md`、`ITER-XX-vX.Y.Z-中文主题.md` ↔ `ACCEPT-XX-vX.Y.Z-中文主题.md` 1:1 对齐命名。
+3. **顶部直观「中文文档元信息卡」**：每篇正式文档标题下方强制展示**文档编号、当前状态、关联版本、创建角色与时间、最后修改角色与时间**。
+4. **受控信息标签词典**：文档状态仅限 `DRAFT` | `ACTIVE` | `COMPLETED` | `SUPERSEDED` | `DEPRECATED`；优先级仅限 `P0`~`P3`；任务与验证状态仅限 `TODO` | `IN_PROGRESS` | `BLOCKED` | `MOCK_TEMP` | `PASS` | `FAIL`。作废旧文档统一移入 `docs/99-archive/`。
+5. **文末强制「文档变更记录表」**：任何 AI 或人类每次修改文档正文，必须同步递增版本号并在文末表格记录**修订时间、操作角色（如 `Claude-Code` / `Codex` / `Antigravity`）、关联分支及修改原因**。
 
 ---
 
@@ -328,11 +338,13 @@ dev-setup/
 │   ├── bootstrap.ps1                         # Windows 原生零依赖脚手架与巡检引擎（UTF-8 无 BOM）
 │   └── bootstrap.sh                          # macOS / Linux / POSIX 零依赖脚手架与巡检引擎
 ├── references/                               # 按需加载的细分模式操作手册（Progressive Disclosure）
+│   ├── standards-naming-and-metadata.md      # 全局文件命名、受控标签词典与文档修订溯源规范
 │   ├── mode-init-and-brownfield.md
 │   ├── mode-resume-and-handoff.md
 │   ├── mode-git-worktree-and-release.md
 │   └── mode-audit-and-doc-ssot.md
-└── templates/                                # 目标项目渲染模板库（22 个标准模板）
+└── templates/                                # 目标项目渲染模板库（标准模板 + 安全钩子）
+    ├── hooks/                                # 自包含 pre-commit / pre-push 秘钥物理拦截钩子
     ├── root/                                 # AGENTS.md、CLAUDE.md、GEMINI.md、Cursor 规则、README 等
     └── docs/                                 # 00-index.md 与 00-ai-hub ~ 06-ops-and-pitfalls 模板
 ```

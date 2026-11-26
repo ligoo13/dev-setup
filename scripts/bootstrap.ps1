@@ -16,6 +16,9 @@ param(
     [string]$TechStack = "TBD",
 
     [Parameter(Mandatory = $false)]
+    [string]$Author = "dev-setup (AI)",
+
+    [Parameter(Mandatory = $false)]
     [string]$Branch = "",
 
     [Parameter(Mandatory = $false)]
@@ -37,6 +40,17 @@ try {
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $SkillRoot = Split-Path -Parent $PSScriptRoot
 $TemplatesRoot = Join-Path $SkillRoot "templates"
+
+# Canonical localized doc filenames (pure ASCII source escapes for PS 5.1 compatibility)
+$DocPrd000      = "docs/01-prd/PRD-000-" + [regex]::Unescape('\u5168\u5c40\u4ea7\u54c1\u9700\u6c42\u603b\u7eb2') + ".md"
+$DocArch000     = "docs/02-architecture/ARCH-000-" + [regex]::Unescape('\u7cfb\u7edf\u67b6\u6784\u4e0e\u6a21\u5757\u8bbe\u8ba1\u603b\u7eb2') + ".md"
+$DocAdr0001     = "docs/02-architecture/adr/ADR-0001-" + [regex]::Unescape('\u521d\u59cb\u67b6\u6784\u4e0e\u6280\u672f\u9009\u578b\u57fa\u7ebf') + ".md"
+$DocApi000      = "docs/03-contracts/API-000-" + [regex]::Unescape('\u5168\u5c40\u63a5\u53e3\u5951\u7ea6\u603b\u8868') + ".md"
+$DocData000     = "docs/03-contracts/DATA-000-" + [regex]::Unescape('\u6838\u5fc3\u6570\u636e\u6a21\u578b\u4e0e\u5b57\u5178') + ".md"
+$DocIter01      = "docs/04-iterations/ITER-01-v0.1.0-MVP" + [regex]::Unescape('\u9996\u8f6e\u8fed\u4ee3\u8ba1\u5212') + ".md"
+$DocAccept01    = "docs/05-acceptance/ACCEPT-01-v0.1.0-MVP" + [regex]::Unescape('\u9996\u8f6e\u9a8c\u6536\u5355') + ".md"
+$DocOps000      = "docs/06-ops-and-pitfalls/OPS-000-" + [regex]::Unescape('\u73af\u5883\u642d\u5efa\u4e0e\u90e8\u7f72\u8fd0\u7ef4\u624b\u518c') + ".md"
+$DocPitfalls000 = "docs/06-ops-and-pitfalls/PITFALLS-000-" + [regex]::Unescape('\u9879\u76ee\u8e29\u5751\u9519\u9898\u672c') + ".md"
 
 function Write-Utf8File {
     param([string]$Path, [string]$Content)
@@ -90,6 +104,7 @@ function Render-TemplateContent {
         [string]$NameVal,
         [string]$SummaryVal,
         [string]$StackVal,
+        [string]$AuthorVal,
         [string]$DateVal,
         [string]$DateTimeVal
     )
@@ -97,6 +112,7 @@ function Render-TemplateContent {
         Replace("{{PROJECT_NAME}}", $NameVal).
         Replace("{{PROJECT_SUMMARY}}", $SummaryVal).
         Replace("{{TECH_STACK}}", $StackVal).
+        Replace("{{AUTHOR}}", $AuthorVal).
         Replace("{{DATE}}", $DateVal).
         Replace("{{DATETIME}}", $DateTimeVal)
 }
@@ -119,6 +135,9 @@ function Invoke-InitAction {
     if ([string]::IsNullOrWhiteSpace($TechStack)) {
         $TechStack = "TBD"
     }
+    if ([string]::IsNullOrWhiteSpace($Author)) {
+        $Author = "dev-setup (AI)"
+    }
 
     $nowDate = (Get-Date).ToString("yyyy-MM-dd")
     $nowDateTime = (Get-Date).ToString("yyyy-MM-dd HH:mm")
@@ -127,8 +146,8 @@ function Invoke-InitAction {
     Write-Output "Target   : $target"
     Write-Output "Detected : $modeLabel"
     Write-Output "Project  : $ProjectName"
+    Write-Output "Author   : $Author"
 
-    # Ensure core directories exist (never pre-create empty src/ business folders)
     $requiredDirs = @(
         ".tmp",
         ".cursor/rules",
@@ -139,7 +158,8 @@ function Invoke-InitAction {
         "docs/03-contracts",
         "docs/04-iterations",
         "docs/05-acceptance",
-        "docs/06-ops-and-pitfalls"
+        "docs/06-ops-and-pitfalls",
+        "docs/99-archive"
     )
     foreach ($relDir in $requiredDirs) {
         $fullDir = Join-Path $target $relDir
@@ -148,10 +168,12 @@ function Invoke-InitAction {
         }
     }
 
-    $gitkeepPath = Join-Path $target ".tmp/.gitkeep"
-    if (-not (Test-Path -LiteralPath $gitkeepPath)) {
-        Write-Utf8File -Path $gitkeepPath -Content ""
-        Write-Output "[CREATED]  .tmp/.gitkeep"
+    foreach ($keepRel in @(".tmp/.gitkeep", "docs/99-archive/.gitkeep")) {
+        $keepPath = Join-Path $target $keepRel
+        if (-not (Test-Path -LiteralPath $keepPath)) {
+            Write-Utf8File -Path $keepPath -Content ""
+            Write-Output "[CREATED]  $keepRel"
+        }
     }
 
     $mappings = @(
@@ -168,22 +190,22 @@ function Invoke-InitAction {
         @{ Src = "docs/00-ai-hub/SESSIONS.md.tmpl"; Dst = "docs/00-ai-hub/SESSIONS.md" },
         @{ Src = "docs/00-ai-hub/handoff-template.md.tmpl"; Dst = "docs/00-ai-hub/handoffs/_template.md" },
         @{ Src = "docs/00-ai-hub/review-template.md.tmpl"; Dst = "docs/00-ai-hub/reviews/_template.md" },
-        @{ Src = "docs/01-prd/prd-overview.md.tmpl"; Dst = "docs/01-prd/prd-overview.md" },
-        @{ Src = "docs/02-architecture/system-design.md.tmpl"; Dst = "docs/02-architecture/system-design.md" },
-        @{ Src = "docs/02-architecture/adr-0001-initial-architecture.md.tmpl"; Dst = "docs/02-architecture/adr/0001-initial-architecture.md" },
-        @{ Src = "docs/03-contracts/api-spec.md.tmpl"; Dst = "docs/03-contracts/api-spec.md" },
-        @{ Src = "docs/03-contracts/data-dictionary.md.tmpl"; Dst = "docs/03-contracts/data-dictionary.md" },
-        @{ Src = "docs/04-iterations/iter-01-mvp.md.tmpl"; Dst = "docs/04-iterations/iter-01-mvp.md" },
-        @{ Src = "docs/05-acceptance/accept-01-mvp.md.tmpl"; Dst = "docs/05-acceptance/accept-01-mvp.md" },
-        @{ Src = "docs/06-ops-and-pitfalls/deployment.md.tmpl"; Dst = "docs/06-ops-and-pitfalls/deployment.md" },
-        @{ Src = "docs/06-ops-and-pitfalls/pitfalls.md.tmpl"; Dst = "docs/06-ops-and-pitfalls/pitfalls.md" }
+        @{ Src = "docs/01-prd/prd-000-overview.md.tmpl"; Dst = $DocPrd000 },
+        @{ Src = "docs/02-architecture/arch-000-system-design.md.tmpl"; Dst = $DocArch000 },
+        @{ Src = "docs/02-architecture/adr-0001-initial-architecture.md.tmpl"; Dst = $DocAdr0001 },
+        @{ Src = "docs/03-contracts/api-000-spec.md.tmpl"; Dst = $DocApi000 },
+        @{ Src = "docs/03-contracts/data-000-dictionary.md.tmpl"; Dst = $DocData000 },
+        @{ Src = "docs/04-iterations/iter-01-mvp.md.tmpl"; Dst = $DocIter01 },
+        @{ Src = "docs/05-acceptance/accept-01-mvp.md.tmpl"; Dst = $DocAccept01 },
+        @{ Src = "docs/06-ops-and-pitfalls/ops-000-deployment.md.tmpl"; Dst = $DocOps000 },
+        @{ Src = "docs/06-ops-and-pitfalls/pitfalls-000-registry.md.tmpl"; Dst = $DocPitfalls000 }
     )
 
     foreach ($item in $mappings) {
         $srcPath = Join-Path $TemplatesRoot $item.Src
         $dstPath = Join-Path $target $item.Dst
         $raw = Read-Utf8File -Path $srcPath
-        $rendered = Render-TemplateContent -Raw $raw -NameVal $ProjectName -SummaryVal $Summary -StackVal $TechStack -DateVal $nowDate -DateTimeVal $nowDateTime
+        $rendered = Render-TemplateContent -Raw $raw -NameVal $ProjectName -SummaryVal $Summary -StackVal $TechStack -AuthorVal $Author -DateVal $nowDate -DateTimeVal $nowDateTime
 
         if ($item.Dst -eq ".gitignore" -and (Test-Path -LiteralPath $dstPath) -and -not $Force) {
             $existingIgnore = Read-Utf8File -Path $dstPath
@@ -267,9 +289,11 @@ function Invoke-GitSetupAction {
             Write-Output "[OK] Initialized new Git repository on 'main'."
         }
 
+        # Display Chinese filenames cleanly without octal escapes in git status / diff
+        Invoke-Git config core.quotepath false | Out-Null
+
         Install-GitSecretHooks -RepoRoot $target
 
-        # Ensure git author exists locally if global git config is absent
         $userRes = Invoke-Git config user.name
         if ([string]::IsNullOrWhiteSpace($userRes.Text)) {
             Invoke-Git config user.name "Developer" | Out-Null
@@ -281,7 +305,6 @@ function Invoke-GitSetupAction {
         $hasCommits = ($headRes.ExitCode -eq 0)
 
         if (-not $hasCommits) {
-            # Greenfield initial commit on main + create develop
             Invoke-Git symbolic-ref HEAD refs/heads/main | Out-Null
             Invoke-Git add -A | Out-Null
             $initMsg = "chore(init): " + [regex]::Unescape('\u521d\u59cb\u5316\u9879\u76ee\u5de5\u7a0b\u5316\u57fa\u5ea7\u4e0e\u6838\u5fc3\u6587\u6863')
@@ -295,7 +318,6 @@ function Invoke-GitSetupAction {
             }
             Write-Output "[OK] Created baseline commit on 'main' and switched to 'develop'."
         } else {
-            # Brownfield safe branch setup without rewriting history
             $mainRes = Invoke-Git show-ref --verify --quiet refs/heads/main
             if ($mainRes.ExitCode -ne 0) {
                 $masterRes = Invoke-Git show-ref --verify --quiet refs/heads/master
@@ -438,12 +460,12 @@ function Invoke-AuditAction {
         "docs/00-index.md",
         "docs/00-ai-hub/STATE.md",
         "docs/00-ai-hub/SESSIONS.md",
-        "docs/01-prd/prd-overview.md",
-        "docs/02-architecture/system-design.md",
-        "docs/03-contracts/api-spec.md",
-        "docs/03-contracts/data-dictionary.md",
-        "docs/06-ops-and-pitfalls/deployment.md",
-        "docs/06-ops-and-pitfalls/pitfalls.md"
+        $DocPrd000,
+        $DocArch000,
+        $DocApi000,
+        $DocData000,
+        $DocOps000,
+        $DocPitfalls000
     )
 
     foreach ($rel in $requiredFiles) {
@@ -462,7 +484,8 @@ function Invoke-AuditAction {
         "docs/00-ai-hub/reviews",
         "docs/02-architecture/adr",
         "docs/04-iterations",
-        "docs/05-acceptance"
+        "docs/05-acceptance",
+        "docs/99-archive"
     )
     foreach ($relDir in $requiredDirs) {
         $p = Join-Path $target $relDir
@@ -493,7 +516,7 @@ function Invoke-AuditAction {
     $rootFiles = Get-ChildItem -LiteralPath $target -File -Force
     foreach ($f in $rootFiles) {
         if ($f.Extension -ieq ".md" -and ($allowedRootMd -notcontains $f.Name)) {
-            Write-Output "[WARN] Non-standard Markdown file in project root: $($f.Name) (consider moving under docs/)"
+            Write-Output "[WARN] Non-standard Markdown file in project root: $($f.Name) (move under docs/)"
             $warnCount++
         }
         if ($f.Name -imatch "^(temp|tmp|scratch|debug|test_)") {
@@ -502,7 +525,82 @@ function Invoke-AuditAction {
         }
     }
 
-    # Git checks
+    # Naming, Metadata Card & Revision History checks under docs/
+    $docsRoot = Join-Path $target "docs"
+    if (Test-Path -LiteralPath $docsRoot) {
+        $kwMetaCard = [regex]::Unescape('\u6587\u6863\u5143\u4fe1\u606f\u5361')
+        $kwLastMod  = [regex]::Unescape('\u6700\u540e\u4fee\u6539')
+        $kwRevHist  = [regex]::Unescape('\u6587\u6863\u53d8\u66f4\u8bb0\u5f55')
+        $messySuffixPattern = "(_v[0-9]+|_new|_final|_old|_bak|_copy|" + [regex]::Unescape('\u526f\u672c|\u6700\u7ec8\u7248') + ")\.[a-zA-Z0-9]+$"
+
+        # 1. Subdirectory kebab-case check under docs/
+        $docSubDirs = Get-ChildItem -LiteralPath $docsRoot -Directory -Recurse -Force
+        foreach ($d in $docSubDirs) {
+            if ($d.Name -cnotmatch "^[a-z0-9-]+$") {
+                $relD = $d.FullName.Substring($target.Length + 1) -replace '\\', '/'
+                Write-Output "[WARN] Directory violates lowercase kebab-case standard: $relD"
+                $warnCount++
+            }
+        }
+
+        # 2. Messy suffix check across docs/ (excluding 99-archive/)
+        $allDocFiles = Get-ChildItem -LiteralPath $docsRoot -File -Recurse -Force
+        foreach ($df in $allDocFiles) {
+            $relDf = $df.FullName.Substring($target.Length + 1) -replace '\\', '/'
+            if ($relDf.StartsWith("docs/99-archive/")) { continue }
+            if ($df.Name -eq ".gitkeep" -or $df.Name -eq "_template.md") { continue }
+
+            if ($df.Name -imatch $messySuffixPattern) {
+                Write-Output "[WARN] Forbidden chaotic suffix (_v2/_final/_bak/etc.) in filename: $relDf"
+                $warnCount++
+            }
+        }
+
+        # 3. Naming formula + Metadata Card + Revision History check for docs/01..06
+        $specRules = @(
+            @{ Dir = "docs/01-prd";                Recurse = $false; Regex = "^PRD-[0-9]{3}-.+\.md$" },
+            @{ Dir = "docs/02-architecture";       Recurse = $false; Regex = "^ARCH-[0-9]{3}-.+\.md$" },
+            @{ Dir = "docs/02-architecture/adr";   Recurse = $false; Regex = "^ADR-[0-9]{4}-.+\.md$" },
+            @{ Dir = "docs/03-contracts";          Recurse = $false; Regex = "^(API|DATA)-[0-9]{3}-.+\.md$" },
+            @{ Dir = "docs/04-iterations";         Recurse = $false; Regex = "^ITER-[0-9]{2}-v[0-9]+\.[0-9]+\.[0-9]+-.+\.md$" },
+            @{ Dir = "docs/05-acceptance";         Recurse = $false; Regex = "^(ACCEPT|TEST)-[0-9]{2}-v[0-9]+\.[0-9]+\.[0-9]+-.+\.md$" },
+            @{ Dir = "docs/06-ops-and-pitfalls";   Recurse = $false; Regex = "^(OPS|PITFALLS)-[0-9]{3}-.+\.md$" }
+        )
+
+        foreach ($sr in $specRules) {
+            $dirFull = Join-Path $target $sr.Dir
+            if (-not (Test-Path -LiteralPath $dirFull)) { continue }
+            $mdFiles = Get-ChildItem -LiteralPath $dirFull -Filter "*.md" -File -Force
+            foreach ($mf in $mdFiles) {
+                $relMf = "$($sr.Dir)/$($mf.Name)"
+                if ($mf.Name -cnotmatch $sr.Regex) {
+                    Write-Output "[WARN] Document filename violates '$($sr.Regex)' naming rule: $relMf"
+                    $warnCount++
+                } else {
+                    $passCount++
+                }
+
+                $content = Read-Utf8File -Path $mf.FullName
+                $hasCard = ($content -match $kwMetaCard) -and ($content -match $kwLastMod)
+                $hasValidStatus = ($content -cmatch '`?(DRAFT|ACTIVE|COMPLETED|SUPERSEDED|DEPRECATED)`?')
+                $hasRevTable = ($content -match $kwRevHist)
+
+                if (-not ($hasCard -and $hasValidStatus -and $hasRevTable)) {
+                    Write-Output "[WARN] Document missing standard metadata card, controlled status tag, or revision history table: $relMf"
+                    $warnCount++
+                } else {
+                    $passCount++
+                }
+
+                if ($content -cmatch '\*\*`?(SUPERSEDED|DEPRECATED)`?\*\*' -or $content -cmatch ':\s*`(SUPERSEDED|DEPRECATED)`' -or $content -cmatch '\uff1a`(SUPERSEDED|DEPRECATED)`') {
+                    Write-Output "[WARN] Superseded/Deprecated document should be archived to docs/99-archive/: $relMf"
+                    $warnCount++
+                }
+            }
+        }
+    }
+
+    # Git & Security checks
     $gitDir = Join-Path $target ".git"
     if (Test-Path -LiteralPath $gitDir) {
         Push-Location $target

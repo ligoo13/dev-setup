@@ -1,10 +1,15 @@
-# 会话交接单模板（复制并重命名为 `YYYY-MM-DD-HHmm-<from>-to-<to>-<topic>.md`）
+# [HANDOFF] 会话交接单模板
 
-- **交接时间**：`YYYY-MM-DD HH:mm`
-- **交出方 AI / 终端**：`<例如：Claude Code / 终端 1>`
-- **接收方 AI / 终端**：`<例如：Codex / Antigravity / 下一会话>`
-- **所在分支与工作区**：`<develop 或 .worktrees/feat-xxx (feat/xxx)>`
-- **最新 Commit Hash**：`<git rev-parse --short HEAD>`
+> **新建命名规则**：复制本模板并在同目录新建 `YYYY-MM-DD-HHmm-<交出AI>-to-<接收AI或Next>-<中文直白主题>.md`
+> *(例如：`2026-11-26-1830-Claude-Code-to-Codex-登录鉴权接口联调.md`)*
+> **安全脱敏提醒**：严禁在交接单中贴入真实 API Key、服务器公网 IP、密码或带真实 Token 的请求报文，一律用 `<REDACTED>` 脱敏！
+
+> **文档元信息卡**
+> - **交接时间**：`YYYY-MM-DD HH:mm` ｜ **关联项目版本**：`vX.Y.Z`
+> - **交出角色（Created By）**：`<例如：Claude-Code (Opus)>`
+> - **接收角色（Handed Off To）**：`<例如：Codex / Antigravity / Next-Session>`
+> - **所在分支与工作区**：`<develop 或 .worktrees/feat-xxx (feat/xxx)>`
+> - **最新 Commit Hash**：`<git rev-parse --short HEAD>`
 
 ---
 
@@ -13,30 +18,32 @@
 - **完成内容简述**：
   - ...
 - **核心新增/修改文件**：
-  - `path/to/file1` — 简述改动点
-  - `path/to/file2` — 简述改动点
+  - `path/to/file1` — 简述改动点与原因
+  - `docs/...` — 已同步更新的关联文档与变更记录
 
 ---
 
-## 2. 实跑验证状态（如实填写，严禁虚报）
+## 2. 实跑验证状态（使用标准枚举：`PASS` / `FAIL` / `TODO` / `BLOCKED`）
 
-- [ ] Lint / 类型检查：`<已通过 / 未运行 / 报错详情>`
-- [ ] 单元测试 / 接口自测：`<具体执行的命令与结果>`
-- [ ] 文档同步检查：`<是否已同步更新 contracts / architecture / pitfalls>`
+| 检查项 | 执行命令 | 状态 | 结果说明 |
+| :--- | :--- | :--- | :--- |
+| 代码检查 (Lint / Typecheck) | `<填写命令>` | `TODO` | ... |
+| 自动化测试 / 接口验证 | `<填写命令>` | `TODO` | ... |
+| 敏感信息扫描 (`secret-scan`) | `git status / secret-scan` | `PASS` | 无秘钥或未脱敏内容 |
 
 ---
 
-## 3. 未完成事项、卡点与风险提示
+## 3. 未完成事项、卡点与上下文决策叮嘱
 
-- **剩余待完成工作**：
-  1. ...
-- **当前卡点或临时 `[MOCK-BLOCKER]`（无则填“无”）**：
+- **剩余待办（按 `P0`/`P1` 标注优先级）**：
+  1. `[P0]` ...
+- **当前阻塞项或 `MOCK_TEMP`（无则填“无”）**：
   - ...
-- **上下文决策叮嘱（为什么这么写，下一棒切勿误删或推翻的点）**：
+- **关键决策说明（为什么这么写，下一棒切勿误删或推翻的逻辑）**：
   - ...
 
 ---
 
 ## 4. 给下一棒 AI 的第一条明确行动指令
 
-> 接手后请先执行：`<精确到文件与步骤的第一步操作建议>`
+> 接手后请先执行：`<精确到文件路径与验证方式的第一步操作指令>`

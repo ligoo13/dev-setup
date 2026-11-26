@@ -1,27 +1,29 @@
 # `{{PROJECT_NAME}}` 文档总索引与单一事实源（SSOT）导航
 
-> **最后更新**：`{{DATE}}`
-> 本目录集中管理项目全部业务规格、技术架构、迭代验收以及多 AI 运行时状态。
+> **文档元信息卡**
+> - **文档编号**：`INDEX-000` ｜ **文档性质**：`全局文档导航索引`
+> - **当前状态**：`ACTIVE`
+> - **最后修改**：`{{AUTHOR}}` 更新于 `{{DATETIME}}`
 
 ---
 
-## 1. 核心目录速查导航
+## 1. 核心目录与标准文档入口
 
-| 编号目录 | 核心文档入口 | 职责定位 |
+| 编号目录 | 常青主文档 / 阶段文档入口 | 职责定位与命名规则 |
 | :--- | :--- | :--- |
-| **`00-ai-hub/`** | [STATE.md](./00-ai-hub/STATE.md) / [SESSIONS.md](./00-ai-hub/SESSIONS.md) | **AI 协同中枢**：全局断点进度、并发模块锁、`handoffs/` 交接单、`reviews/` 方案互审 |
-| **`01-prd/`** | [prd-overview.md](./01-prd/prd-overview.md) | **需求中心**：业务背景目标、核心功能范围、明确不做边界（Non-Goals） |
-| **`02-architecture/`** | [system-design.md](./02-architecture/system-design.md) / [adr/](./02-architecture/adr/) | **架构中心**：系统架构、模块与源码目录映射、ADR 关键技术选型记录 |
-| **`03-contracts/`** | [api-spec.md](./03-contracts/api-spec.md) / [data-dictionary.md](./03-contracts/data-dictionary.md) | **契约中心**：接口协议规范与核心数据模型字典（多端并行对齐基准） |
-| **`04-iterations/`** | [iter-01-mvp.md](./04-iterations/iter-01-mvp.md) | **迭代中心**：分阶段开发计划、任务拆解与范围变更记录 |
-| **`05-acceptance/`** | [accept-01-mvp.md](./05-acceptance/accept-01-mvp.md) | **验收中心**：里程碑完成定义（DoD）、实跑自测命令与验收签收单 |
-| **`06-ops-and-pitfalls/`** | [deployment.md](./06-ops-and-pitfalls/deployment.md) / [pitfalls.md](./06-ops-and-pitfalls/pitfalls.md) | **运维与错题本**：环境搭建发布指南 + 已验证死胡同/环境怪癖避坑记录 |
+| **`00-ai-hub/`** | [STATE.md](./00-ai-hub/STATE.md) / [SESSIONS.md](./00-ai-hub/SESSIONS.md) | **AI 协同中枢**：断点总面板、并发锁、`handoffs/` 交接单、`reviews/` 方案互审 |
+| **`01-prd/`** | [PRD-000-全局产品需求总纲.md](./01-prd/PRD-000-全局产品需求总纲.md) | **需求中心**：`PRD-000` 常青总纲 + `PRD-00X-<中文主题>.md` 增量需求 |
+| **`02-architecture/`** | [ARCH-000-系统架构与模块设计总纲.md](./02-architecture/ARCH-000-系统架构与模块设计总纲.md) | **架构中心**：`ARCH-000` 常青架构 + `adr/ADR-000X-<中文主题>.md` 决策单 |
+| **`03-contracts/`** | [API-000-全局接口契约总表.md](./03-contracts/API-000-全局接口契约总表.md) / [DATA-000-核心数据模型与字典.md](./03-contracts/DATA-000-核心数据模型与字典.md) | **契约中心**：跨模块/前后端多 AI 并行开发的唯一对齐基准 |
+| **`04-iterations/`** | [ITER-01-v0.1.0-MVP首轮迭代计划.md](./04-iterations/ITER-01-v0.1.0-MVP首轮迭代计划.md) | **迭代中心**：按 `ITER-XX-vX.Y.Z-<中文主题>.md` 编号递增 |
+| **`05-acceptance/`** | [ACCEPT-01-v0.1.0-MVP首轮验收单.md](./05-acceptance/ACCEPT-01-v0.1.0-MVP首轮验收单.md) | **验收测试**：按 `ACCEPT-XX` / `TEST-XX` 编号，与 `ITER-XX` 1:1 严格咬合 |
+| **`06-ops-and-pitfalls/`** | [OPS-000-环境搭建与部署运维手册.md](./06-ops-and-pitfalls/OPS-000-环境搭建与部署运维手册.md) / [PITFALLS-000-项目踩坑错题本.md](./06-ops-and-pitfalls/PITFALLS-000-项目踩坑错题本.md) | **运维与错题本**：环境发布手册 + 已证伪死胡同避坑记录 |
+| **`99-archive/`** | `./99-archive/` | **历史归档区**：存放状态已改为 `SUPERSEDED` 或 `DEPRECATED` 的淘汰旧档 |
 
 ---
 
-## 2. 防文档腐烂联动守则（摘自 `AGENTS.md`）
+## 2. 文档编写与修订三大铁律
 
-1. **先契约后并行**：多终端并行开发前后端或跨模块功能前，必须先定稿更新 `03-contracts/`。
-2. **改架构必留痕**：目录结构变化更新 `02-architecture/system-design.md` 与根目录 `README.md`；关键技术取舍新增一篇 `02-architecture/adr/NNNN-*.md`。
-3. **踩坑必入库**：任何耗时超过 15 分钟排查出的隐蔽陷阱或被证伪的错误路径，立即记入 `06-ops-and-pitfalls/pitfalls.md`。
-4. **退场必刷新**：单次开发告一段落时刷新 `00-ai-hub/STATE.md`；跨窗口/跨 AI 接力时在 `00-ai-hub/handoffs/` 生成独立交接单。
+1. **命名规范**：文件夹一律用小写英文 `kebab-case`；`docs/01`~`06` 文档一律按 `<大写类型码>-<编号>-<中文直白主题>.md` 命名，严禁 `_v2`、`_new`、`_final` 后缀。
+2. **标签受控**：文档状态仅限 `DRAFT` | `ACTIVE` | `COMPLETED` | `SUPERSEDED` | `DEPRECATED`；优先级仅限 `P0`~`P3`；任务与测试状态仅限 `TODO` | `IN_PROGRESS` | `BLOCKED` | `MOCK_TEMP` | `PASS` | `FAIL`。
+3. **修改留痕**：任何 AI 或人类修改正式文档正文后，必须同步更新顶部「文档元信息卡」的 `最后修改`，并在文末《文档变更记录》追加一行记录！

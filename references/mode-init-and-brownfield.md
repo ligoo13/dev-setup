@@ -37,7 +37,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "<SKILL_DIR>/scripts/bootstr
   -TargetDir "<TARGET_DIR>" `
   -ProjectName "<项目名称>" `
   -Summary "<一句话定位>" `
-  -TechStack "<核心技术栈>"
+  -TechStack "<核心技术栈>" `
+  -Author "<当前AI客户端标识，如 Antigravity / Claude-Code / Codex>"
 ```
 
 ### macOS / Linux / Git Bash 调用示例
@@ -47,13 +48,14 @@ sh "<SKILL_DIR>/scripts/bootstrap.sh" \
   --target-dir "<TARGET_DIR>" \
   --project-name "<项目名称>" \
   --summary "<一句话定位>" \
-  --tech-stack "<核心技术栈>"
+  --tech-stack "<核心技术栈>" \
+  --author "<当前AI客户端标识，如 Antigravity / Claude-Code / Codex>"
 ```
 
 **脚本会自动完成以下工作（UTF-8 无 BOM）**：
-- 创建 `.tmp/.gitkeep`、`.cursor/rules/` 以及 `docs/00-ai-hub/{handoffs,reviews}` 至 `docs/06-ops-and-pitfalls/` 全部标准目录；
+- 创建 `.tmp/.gitkeep`、`docs/99-archive/.gitkeep`、`.cursor/rules/` 以及 `docs/00-ai-hub/{handoffs,reviews}` 至 `docs/06-ops-and-pitfalls/` 全部标准目录；
 - 绝不创建空 `src/` 等业务源码目录（避免阻塞后续 `create-next-app`、`uv init`、`pnpm create` 等脚手架）；
-- 从 `templates/` 渲染生成 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、`.cursor/rules/00-project-os.mdc`、`README.md`（若不存在）、`CHANGELOG.md`、`.env.example`、`.gitignore`（若已存在则无损追加缺失忽略项）及 `docs/00`~`06` 全套初始文档。
+- 从 `templates/` 渲染生成 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、`.cursor/rules/00-project-os.mdc`、`README.md`（若不存在）、`CHANGELOG.md`、`.env.example`、`.gitignore`（若已存在则无损追加缺失忽略项）及带标准「中文文档元信息卡」与「文档变更记录表」的 `docs/00`~`06` 全套初始文档。
 
 *(注：若环境无法运行脚本，请直接读取 `../templates/` 下所有 `.tmpl` 文件并手动写入对应路径。)*
 
@@ -61,14 +63,14 @@ sh "<SKILL_DIR>/scripts/bootstrap.sh" \
 
 ## Step 4：AI 智能填充业务灵魂（严禁留空泛模板交差！）
 
-脚本生成的是带项目元信息的标准骨架，接下来你必须结合用户的回答（以及存量项目的现有代码扫描结果），实质性完善以下关键文件：
+脚本生成的是带项目元信息的标准骨架，接下来你必须结合用户的回答（以及存量项目的现有代码扫描结果），实质性完善以下关键文件（**修改时保留顶部文档元信息卡与文末文档变更记录表**）：
 
 1. **`AGENTS.md`**：填入已知的安装/启动/测试/构建验证命令（若尚未初始化代码框架，保留清晰的 `TBD（首次初始化代码框架时必须同步回填）` 标记）及项目专属补充约束。
 2. **`README.md`**：完善项目背景、核心特性规划、快速开始指引（Brownfield 项目则在保留原有有效说明的基础上，补充标准 `docs/` 文档导航入口与当前工程结构说明）。
-3. **`docs/01-prd/prd-overview.md`**：写入真实的项目背景目标、目标用户/使用场景、核心功能清单与明确不做边界（Non-Goals）。
-4. **`docs/02-architecture/system-design.md` & `adr/0001-initial-architecture.md`**：写入技术栈选型理由、核心模块划分规划（Brownfield 项目需盘点真实源码目录树写入此处）。
-5. **`docs/04-iterations/iter-01-mvp.md` & `docs/05-acceptance/accept-01-mvp.md`**：将首轮目标拆解为可执行、可勾选的任务清单，并明确对应的验收标准。
-6. **`docs/00-ai-hub/STATE.md`**：将当前阶段设为 `Iter-01 MVP 准备就绪`（或存量项目对应的真实进度），明确列出「下一步待执行任务 Top 3」。
+3. **`docs/01-prd/PRD-000-全局产品需求总纲.md`**：写入真实的项目背景目标、目标用户/使用场景、核心功能清单与明确不做边界（Non-Goals）。
+4. **`docs/02-architecture/ARCH-000-系统架构与模块设计总纲.md` & `adr/ADR-0001-初始架构与技术选型基线.md`**：写入技术栈选型理由、核心模块划分规划（Brownfield 项目需盘点真实源码目录树写入此处）。
+5. **`docs/04-iterations/ITER-01-v0.1.0-MVP首轮迭代计划.md` & `docs/05-acceptance/ACCEPT-01-v0.1.0-MVP首轮验收单.md`**：将首轮目标拆解为可执行、可勾选的任务清单，并明确对应的验收标准。
+6. **`docs/00-ai-hub/STATE.md`**：将当前阶段设为 `ITER-01 MVP 准备就绪`（或存量项目对应的真实进度），明确列出「下一步待执行任务 Top 3」。
 
 ---
 
