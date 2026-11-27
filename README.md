@@ -11,7 +11,7 @@
 - [2. 核心设计哲学与工作流全景](#2-核心设计哲学与工作流全景)
 - [3. 受管项目的统一标准目录拓扑与命名溯源体系](#3-受管项目的统一标准目录拓扑与命名溯源体系)
 - [4. 全平台 / 全 AI 客户端安装指南](#4-全平台--全-ai-客户端安装指南)
-  - [4.0 前置准备：GitHub 私有仓库鉴权](#40-前置准备github-私有仓库鉴权)
+  - [4.0 前置环境要求](#40-前置环境要求)
   - [4.1 懒人首选：一句话让任意 AI 自动安装](#41-懒人首选一句话让任意-ai-自动安装)
   - [4.2 各主流 AI 客户端分步安装指南](#42-各主流-ai-客户端分步安装指南)
   - [4.3 多客户端玩家推荐：一次克隆 + 软链接全家桶同步](#43-多客户端玩家推荐一次克隆--软链接全家桶同步)
@@ -19,6 +19,7 @@
 - [5. 六大生命周期模式使用手册（口令速查）](#5-六大生命周期模式使用手册口令速查)
 - [6. 内置五大不可逾越工程红线与三重安全门禁](#6-内置五大不可逾越工程红线与三重安全门禁)
 - [7. 本仓库自身结构与自定义扩展指南](#7-本仓库自身结构与自定义扩展指南)
+- [8. 开源协议 (License)](#8-开源协议-license)
 
 ---
 
@@ -101,15 +102,10 @@ flowchart LR
 
 ## 4. 全平台 / 全 AI 客户端安装指南
 
-> 以下示例请将仓库地址替换为你自己的私有仓库地址（例如 `https://github.com/ligoo13/dev-setup.git` 或 `git@github.com:ligoo13/dev-setup.git`）。
+### 4.0 前置环境要求
 
-### 4.0 前置准备：GitHub 私有仓库鉴权
-
-由于本仓库为 **Private（私有仓库）**，在新电脑或新服务器上首次拉取前，请确保已完成以下任一 GitHub 身份认证：
-
-- **方式 A（推荐 · GitHub CLI）**：运行 `gh auth login` 按提示完成浏览器一键登录，随后执行 `gh auth setup-git`。
-- **方式 B（SSH 密钥）**：本机已配置 `~/.ssh/id_ed25519` 并将公钥添加至 GitHub Settings → SSH keys，使用 `git@github.com:ligoo13/dev-setup.git` 地址克隆。
-- **方式 C（Windows / macOS HTTPS 凭据管理器）**：直接运行下方 `git clone https://...` 命令，在弹出的系统 GitHub 登录窗口授权即可自动缓存凭据。
+- **零额外运行时依赖**：仅需本机已安装 **`Git`**（内置脚手架在 Windows 下直接使用系统原生 PowerShell，在 macOS / Linux 下直接使用系统原生 POSIX `sh`，无需预装 Python 或 Node.js）。
+- **开箱即装**：直接执行下方 `git clone https://github.com/ligoo13/dev-setup.git` 即可免登录拉取安装（如果你 Fork 本仓库做了个人私有化定制，替换为你自己的仓库地址即可）。
 
 ---
 
@@ -118,7 +114,7 @@ flowchart LR
 在任何具备终端执行权限的 AI 工具（Antigravity、Claude Code、Codex、Cursor、Gemini CLI 等）中，直接发送以下指令，让 AI 自己完成克隆与挂载：
 
 ```text
-请帮我把我的 GitHub 私有仓库 https://github.com/ligoo13/dev-setup.git 克隆安装为你当前客户端的全局 dev-setup Skill（目标文件夹名必须为 dev-setup），安装完成后告诉我校验结果。
+请帮我把 GitHub 仓库 https://github.com/ligoo13/dev-setup.git 克隆安装为你当前客户端的全局 dev-setup Skill（目标文件夹名必须为 dev-setup），安装完成后告诉我校验结果。
 ```
 
 ---
@@ -317,7 +313,7 @@ git -C ~/.claude/skills/dev-setup pull
 ### 6.1 五大最高优先级工程红线
 1. **反糊弄铁律**：严禁未经明确允许使用硬编码假数据（Mock / Stub / 空壳 `TODO`）冒充功能已完成；未在终端实跑通过验证命令前，严禁汇报“已完成”。
 2. **防越界与洁癖铁律**：严守最小改动半径，禁止顺手重构无关文件、禁止擅自新增重型依赖、禁止触碰其他 AI 锁定的模块；所有临时验证脚本一律进 `.tmp/`，严禁污染项目根目录。
-3. **进场先对齐铁律**：新会话动笔写代码前，必读 `STATE.md` 与 `pitfalls.md`（错题本），并先输出 ≤5 行「进度对齐简报」。
+3. **进场先对齐铁律**：新会话动笔写代码前，必读 `STATE.md` 与 `PITFALLS-000-项目踩坑错题本.md`，并先输出 ≤5 行「进度对齐简报」。
 4. **数据安全与脱敏推送铁律**：严禁硬编码 API Key、云厂商 AK/SK、私钥、明文密码连接串或 Webhook；文档、交接单与错题本强制剥离真实服务器 IP、鉴权报文与用户隐私数据（PII）。**通过自动化敏感扫描后允许 AI 自主执行 `git commit` 与 `git push`，但严禁使用 `--no-verify` 绕过安全钩子！**
 5. **高危操作熔断铁律**：凡涉及删除核心文件/数据、推翻既有 ADR 架构决策、`git reset --hard`、`git push --force` 或直接在 `main` 提交，必须立即停机请示人类确认。
 
@@ -334,6 +330,7 @@ git -C ~/.claude/skills/dev-setup pull
 dev-setup/
 ├── SKILL.md                                  # Skill 核心定义与 6 大模式路由总控
 ├── README.md                                 # 本说明文档（含全平台安装与使用手册）
+├── LICENSE                                   # MIT 开源许可证
 ├── scripts/
 │   ├── bootstrap.ps1                         # Windows 原生零依赖脚手架与巡检引擎（UTF-8 无 BOM）
 │   └── bootstrap.sh                          # macOS / Linux / POSIX 零依赖脚手架与巡检引擎
@@ -351,4 +348,10 @@ dev-setup/
 
 ### 如何按个人偏好继续演进？
 - **增改全局开发红线**：编辑 `templates/root/AGENTS.md.tmpl` 并在 `SKILL.md` 第 3 节同步，提交推送后各终端 `git pull` 即可全局生效。
-- **定制文档章节结构**：直接修改 `templates/docs/` 下对应的 `.tmpl` 文件（支持 `{{PROJECT_NAME}}`、`{{PROJECT_SUMMARY}}`、`{{TECH_STACK}}`、`{{DATE}}`、`{{DATETIME}}` 五个自动渲染占位符）。
+- **定制文档章节结构**：直接修改 `templates/docs/` 下对应的 `.tmpl` 文件（支持 `{{PROJECT_NAME}}`、`{{PROJECT_SUMMARY}}`、`{{TECH_STACK}}`、`{{AUTHOR}}`、`{{DATE}}`、`{{DATETIME}}` 六个自动渲染占位符）。
+
+---
+
+## 8. 开源协议 (License)
+
+本项目基于 [MIT License](./LICENSE) 开源发布，欢迎自由使用、Fork 与定制演进。
